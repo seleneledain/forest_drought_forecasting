@@ -1,0 +1,7 @@
+https://data.geo.admin.ch/ch.swisstopo.swissalti3d/swissalti3d_2021_2486-1117/swissalti3d_2021_2486-1117_0.5_2056_5728.tif
+https://data.geo.admin.ch/ch.swisstopo.swissalti3d/swissalti3d_2021_2486-1118/swissalti3d_2021_2486-1118_0.5_2056_5728.tif
+https://data.geo.admin.ch/ch.swisstopo.swissalti3d/swissalti3d_2021_2486-1119/swissalti3d_2021_2486-1119_0.5_2056_5728.tif
+https://data.geo.admin.ch/ch.swisstopo.swissalti3d/swissalti3d_2021_2487-1110/swissalti3d_2021_2487-1110_0.5_2056_5728.tif
+https://data.geo.admin.ch/ch.swisstopo.swissalti3d/swissalti3d_2021_2487-1111/swissalti3d_2021_2487-1111_0.5_2056_5728.tif
+https://data.geo.admin.ch/ch.swisstopo.swissalti3d/swissalti3d_2021_2487-1112/swissalti3d_2021_2487-1112_0.5_2056_5728.tif
+https://data.geo.admin.ch/ch.swisstopo.swissalti3d/swissalti3d_2021_2487-1113/swissalti3d_2021_2487-1113_0.5_2056_5728.tif

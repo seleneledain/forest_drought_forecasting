@@ -1,0 +1,22 @@
+vpath              = ".";
+pj_scriptdir       = vpath @ "/sj_out/rec_sdir"; # where job script will be written
+pj_logdir          = vpath @ "/sj_out/rec_ldir"; # where output and error logs are written 
+pj_mem_default     = 64000;
+pj_cores_default   = "8+1";
+pj_queue           = "x86_24h"; # 1h, 6h, 12h, 24h, or 7d
+
+
+
+splits ={"train"};
+sample_types ={"pixel_data"};
+exps = {"nofilter"}; 
+start_idxs = {"0", "1000", "2000", "3000", "4000", "5000", "6000", "7000", "8000", "9000"};
+config_ids = {"jura_config_rec_2019_nofilter_p2"};
+
+declare get_called_train_2019_p2(0:9);
+
+define get_called_train_2019_p2(i);
+
+%begin
+python3 get_called_samples.py --split %(splits[0]) --sample_type %(sample_types[0]) --exp %(exps[0]) --start_idx %(start_idxs[i]) --config_id %(config_ids[0]) --samples_per_job 1000 --name_start_idx 30000
+%end

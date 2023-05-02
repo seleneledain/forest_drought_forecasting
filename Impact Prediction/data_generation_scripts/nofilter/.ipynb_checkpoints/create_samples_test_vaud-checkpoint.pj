@@ -1,0 +1,23 @@
+vpath              = ".";
+pj_scriptdir       = vpath @ "/sj_out/rec_sdir"; # where job script will be written
+pj_logdir          = vpath @ "/sj_out/rec_ldir"; # where output and error logs are written 
+pj_mem_default     = 64000;
+pj_cores_default   = "8+1";
+pj_queue           = "x86_24h"; # 1h, 6h, 12h, 24h, or 7d
+
+
+
+splits ={"test_vaud"};
+sample_types ={"pixel_data"};
+exps = {"nofilter"}; 
+start_idxs = {"0","1000", "2000", "3000", "4000", "5000"};
+config_ids = {"vaud_config_rec_nofilter_test"};
+
+declare create_test_vaud(0:5);
+
+define create_test_vaud(i);
+
+%begin
+python3 create_dataset.py --split %(splits[0]) --sample_type %(sample_types[0]) --exp %(exps[0]) --start_idx %(start_idxs[i]) --config_id %(config_ids[0]) --samples_per_job 1000 --name_start_idx 0
+%end
+
