@@ -13,7 +13,7 @@ How to use:
 - Ensure that the paths used in the script/notebook for feature generation relative to the script/notebook.
 - Provide
   - `list_paths`: list of paths to DEM(s). List will be of length 1 if using only 1 DEM
-  - `target`: all generated features will be matches (in final resolution and shape) to this DEM tiff (usually the original DEM)
+  - `target`: all generated features will be matched (in final resolution and shape) to this DEM tiff (usually the original DEM)
   - `feat_list`: list of features among [`slope`, `aspect`, `rugg`, `curv`, `twi`]`
 
 
