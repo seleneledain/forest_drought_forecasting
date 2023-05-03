@@ -9,7 +9,8 @@ Create features from a DEM. Multiple DEMs at different resolutions can be used, 
 Supported features are slope, apsect (will automatically generate northing and easting), ruggedness index, curvature, terrain wetness index. These are cmputed using the WhitebocTools package. Additional features can be computed by adding functions to the `feature_engineer.py` script. For more information on WhiteboxTools: https://www.whiteboxgeo.com/manual/wbt_book/preface.html
 
 How to use:
-- Refer to the `topo_features.ipynb` example notebook in the `feature_engineering` folder.
+- Edit and call the script in terminal as `python run_topo_feats.py`.
+- For examples, including using multiple DEMs at different resolutions, refer to the `topo_features.ipynb` example notebook in the `feature_engineering` folder.
 - Ensure that the paths used in the script/notebook for feature generation relative to the script/notebook.
 - Provide
   - `list_paths`: list of paths to DEM(s). List will be of length 1 if using only 1 DEM
