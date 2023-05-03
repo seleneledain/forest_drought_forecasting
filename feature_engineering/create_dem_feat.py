@@ -69,8 +69,8 @@ def remove_nan_border(path_file, out_path):
 def create_topo_feats(feat_list, dem_path, out_path, suffix=None):
     """
     :param feat_list: list of features to create. ['slope', 'aspect', 'rugg', 'curv', 'twi']
-    :param dem_path: path to DEM
-    :out_path: path   to directory where features will be saved (TIF files). Needs to end with '/'
+    :param dem_path: path to DEM file
+    :out_path: path to directory where features will be saved (TIF files). Needs to end with '/'
     """
     suffix = '_'+suffix if suffix is not None else ''
     file_end = suffix + '.tiff'
@@ -170,12 +170,6 @@ def feats_from_dem(dem_path, target, feat_list, out_path, suffix=None):
     # Delete temporary files
     os.remove(out_path + 'dem_cropped.tiff')
     os.remove(out_path + 'target_tmp.tiff')
-  
-    """
-    for f in feat_list:
-        filename = out_path + f + '_' + suffix + '.tiff'
-        os.remove(filename)
-    """
  
 
     return
@@ -200,15 +194,3 @@ def create_from_multiple_dems(list_paths, target, feat_list, out_path, list_suff
     
     
     return
-
-"""
-parser = argparse.ArgumentParser()
-parser.add_argument('--list_paths', type=str)
-parser.add_argument('--target', type=str)
-parser.add_argument('--feat_list', type=str)
-parser.add_argument('--out_path', type=str)
-parser.add_argument('--list_suffix', type=str)
-args = parser.parse_args()
-
-create_from_multiple_dems(args.list_paths,args.target,args.feat_list,args.out_path,args.list_suffix)
-"""

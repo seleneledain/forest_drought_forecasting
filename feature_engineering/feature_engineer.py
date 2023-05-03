@@ -1,5 +1,5 @@
 """
-Script to create features
+Functions to create topographic features
 
 Selene Ledain
 Oct. 20th, 2022
