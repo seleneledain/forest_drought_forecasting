@@ -16,6 +16,8 @@ How to use:
   - `list_paths`: list of paths to DEM(s). List will be of length 1 if using only 1 DEM
   - `target`: all generated features will be matched (in final resolution and shape) to this DEM tiff (usually the original DEM)
   - `feat_list`: list of features among [`slope`, `aspect`, `rugg`, `curv`, `twi`]`
+  - `out_path`: folder where to store generated features
+  - `list_suffix`: if using multiple DEMs, provide a list of suffixes to differentiate the features generated from various DEMs
 
 
 
