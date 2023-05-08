@@ -1,6 +1,3 @@
-#!interpreter [optional-arg]
-# -*- coding: utf-8 -*-
-
 """
 Script to download tiles of swssiALTI3D DEM from SwissTopo.
 URLs are collectd from the following website: https://www.swisstopo.admin.ch/fr/geodata/height/alti3d.html
@@ -15,7 +12,7 @@ import pandas as pd
 
 
 """ VARIABLES """
-URLS_PATH = 'urls_test.txt'
+URLS_PATH = 'urls_all.txt'
 DOWNLOADS_PATH = 'downloads/dem/'
 
 
