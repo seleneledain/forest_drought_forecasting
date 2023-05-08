@@ -9,6 +9,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── swiss_dem                   > Specific to the downloading of the DEM from Swisstopo.
         ├── swiss_dem_download.py   > Download DEM tiles from swisstopo
         ├── reproject_dem.py        > Reproject the DEM tiles to CRS EPSG:4326
+        ├──  mosiac_dem.py          > Mosaic the tiles together into one single raster file.
 ├── feature_engineering             > Folder containing scripts for the creation of topographic features from DEM(s).
     ├── create_dem_feat.py          > Functions to create multiple features from DEM(s) and adjust generated raster files.
     ├── feature_engineer.py         > Functions to extract individual properties from DEM (based on WhiteboxTools package).
@@ -28,8 +29,8 @@ How to use:
 - Go to https://www.swisstopo.admin.ch/fr/geodata/height/alti3d.html and request the whole dataset of tiles. This will provide you with a list of URLs that you can call to download.
 - Copy the URLs and save them to a `.txt` file. The URLs for the DEM at 2 m resolution (in 2022) is provided (`urls_all.txt`).
 - Using the `swiss_dem_download.py` script, provide the path to this `.txt` file and the path to where you want the DEM tiles to be downloaded. Run the script from terminal by calling `python swiss_dem_download.py`.
-- The DEM tiles need to be reprojected to a global CRS (EPSG:4326) from local CRS (MN95 NF02). Use `python reproject_dem.py` to create new rasters named `*_reprojected.tiff` in a new folder named "dem".
-- (TODO) Create a single DEM raster by mosaicking the tiles together.
+- The DEM tiles need to be reprojected to a global CRS (EPSG:4326) from local CRS (MN95 NF02). Use `python reproject_dem.py` to create new rasters named `*_reprojected.tiff`.
+- Create a single DEM raster by mosaicking the (reprojected) tiles together using `python mosaic_dem.py`. Ensure that the paths are correct in the script.
 
 
 ## Topographic feature engineering
