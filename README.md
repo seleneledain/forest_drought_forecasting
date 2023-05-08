@@ -14,6 +14,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
         ├── download_PAIRS_sen_era.py       > Download Sentinel-2 and ERA-5 data. 
         ├── download_PAIRS_sen_era_agg.py   > Download Sentinel-2 and ERA-5 data aggregated over multiple days.
         ├── download_swiss_dem.py           > Download the swisstopo DEM that was uploaded to PAIRS.
+        ├── download_forest_mask.py         > Download the forest mask from WSL that was uploaded to PAIRS.
         ├── download_env.py                 > Download the environemntal (forest, soil) data that was uploaded to PAIRS.
         ├── VaporPressureDeficit_udf.ipynb  > Notebook containing example of how user-defined-functions (UDFs) were made to compute vapor pressure deficit from aother atmospheric variables.
         ├── launch_downloads.py             > Automate multiple downloads.
