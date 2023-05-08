@@ -3,14 +3,15 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
 
 ## Repository structure
 
-.
+```.
 ├── README.md                       > This file contains a description of what is the repository used for and how to use it.
 ├── feature_engineering             > Folder containing scripts for the creation of topographic features from DEM(s).
     ├── create_dem_feat.py          > Functions to create multiple features from DEM(s) and adjust generated raster files.
     ├── feature_engineer.py         > Functions to extract individual properties from DEM (based on WhiteboxTools package).
     ├── geospatial_data_utils.py    > Helper functions for manipulation raster data in python.
     ├── run_topo_feaets.py          > Final script for topo feature engineering.
-    ├── topo_features.ipynb         > Example notebook.        
+    ├── topo_features.ipynb         > Example notebook.   
+```
     
     
     
