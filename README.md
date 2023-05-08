@@ -19,7 +19,18 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
 ```
     
     
-    
+## Digital Elevation Model (DEM)
+
+Download the DEM from Swisstopo (at 0.5 or 2 m resolution). The DEM is split into tiles that need to be downloaded individually.\
+The scripts are found in `data_downloading/swiss_dem/`
+
+How to use:
+- Go to https://www.swisstopo.admin.ch/fr/geodata/height/alti3d.html and request the whole dataset of tiles. This will provide you with a list of URLs that you can call to download.
+- Copy the URLs and save them to a `.txt` file. The URLs for the DEM at 2 m resolution (in 2022) is provided (`urls_all.txt`).
+- Using the `swiss_dem_download.py` script, provide the path to this `.txt` file and the path to where you want the DEM tiles to be downloaded. Run the script from terminal by calling `python swiss_dem_download.py`.
+- The DEM tiles need to be reprojected to a global CRS (EPSG:4326) from local CRS (MN95 NF02). Use `python reproject_dem.py` to create new rasters named `*_reprojected.tiff` in a new folder named "dem".
+- (TODO) Create a single DEM raster by mosaicking the tiles together.
+
 
 ## Topographic feature engineering
 
@@ -37,19 +48,3 @@ How to use:
   - `feat_list`: list of features among [`slope`, `aspect`, `rugg`, `curv`, `twi`]
   - `out_path`: folder where to store generated features
   - `list_suffix`: if using multiple DEMs, provide a list of suffixes to differentiate the features generated from various DEMs
-
-
-## Digital Elevation Model (DEM)
-
-Download the DEM from Swisstopo (at 0.5 or 2 m resolution). The DEM is split into tiles that need to be downloaded individually.\
-The scripts are found in `data_downloading/swiss_dem/`
-
-How to use:
-- Go to https://www.swisstopo.admin.ch/fr/geodata/height/alti3d.html and request the whole dataset of tiles. This will provide you with a list of URLs that you can call to download.
-- Copy the URLs and save them to a `.txt` file. The URLs for the DEM at 2 m resolution (in 2022) is provided (`urls_all.txt`).
-- Using the `swiss_dem_download.py` script, provide the path to this `.txt` file and the path to where you want the DEM tiles to be downloaded. Run the script from terminal by calling `python swiss_dem_download.py`.
-- The DEM tiles need to be reprojected to a global CRS (EPSG:4326) from local CRS (MN95 NF02). Use `python reproject_dem.py` to create new rasters named `*_reprojected.tiff` in a new folder named "dem".
-- (TODO) Create a single DEM raster by mosaicking the tiles together.
-
-
-
