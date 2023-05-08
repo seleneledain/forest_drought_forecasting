@@ -9,7 +9,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── swiss_dem                   > Specific to the downloading of the DEM from Swisstopo.
         ├── swiss_dem_download.py   > Download DEM tiles from swisstopo
         ├── reproject_dem.py        > Reproject the DEM tiles to CRS EPSG:4326
-        ├──  mosiac_dem.py          > Mosaic the tiles together into one single raster file.
+        ├──  mosaic_dem.py          > Mosaic the tiles together into one single raster file.
 ├── feature_engineering             > Folder containing scripts for the creation of topographic features from DEM(s).
     ├── create_dem_feat.py          > Functions to create multiple features from DEM(s) and adjust generated raster files.
     ├── feature_engineer.py         > Functions to extract individual properties from DEM (based on WhiteboxTools package).
