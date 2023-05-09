@@ -10,6 +10,8 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
         ├── swiss_dem_download.py           > Download DEM tiles from swisstopo
         ├── reproject_dem.py                > Reproject the DEM tiles to CRS EPSG:4326
         ├──  mosaic_dem.py                  > Mosaic the tiles together into one single raster file.
+        ├──  swiss_dem_urls                 > Folder containing download URLs by canton.
+            ├── *.txt                       > URLs for a given canton.
     ├── pairs                               > Specific to downloading remote sensing data from IBM PAIRS.
         ├── download_PAIRS_sen_era.py       > Download Sentinel-2 and ERA-5 data. 
         ├── download_PAIRS_sen_era_agg.py   > Download Sentinel-2 and ERA-5 data aggregated over multiple days.
@@ -32,11 +34,13 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
 ### Digital Elevation Model (DEM)
 
 Download the DEM from Swisstopo (at 0.5 or 2 m resolution). The DEM is split into tiles that need to be downloaded individually.\
-The scripts are found in `data_downloading/swiss_dem/`
+The scripts are found in `data_downloading/swiss_dem/`.
 
-How to use:
+**Disclaimer**: This will produce a high resolution DEM for the whole of Switzerland, ensure you have enough storage space (min 265GB for the 2 m resolution DEM). Furthermore, the data processing might require a lot of RAM. It is advised to only download and process the DEM for your region of interest. 
+
+**How to use**:
 - Go to https://www.swisstopo.admin.ch/fr/geodata/height/alti3d.html and request the whole dataset of tiles. This will provide you with a list of URLs that you can call to download.
-- Copy the URLs and save them to a `.txt` file. The URLs for the DEM at 2 m resolution (in 2022) is provided (`urls_all.txt`).
+- Copy the URLs and save them to a `.txt` file. The URLs for the DEM at 2 m resolution (in 2022) is provided (`urls_all.txt`). The URLs have also been seperated by canton and are provided in `data_downloading/swiss_dem/swiss_dem_urls/`.
 - Using the `swiss_dem_download.py` script, provide the path to this `.txt` file and the path to where you want the DEM tiles to be downloaded. Run the script from terminal by calling
 ```
 python swiss_dem_download.py
@@ -60,7 +64,7 @@ Create features from a DEM. Multiple DEMs at different resolutions can be used, 
 
 Supported features are slope, apsect (will automatically generate northing and easting), ruggedness index, curvature, terrain wetness index. These are cmputed using the WhiteboxTools package. Additional features can be computed by adding functions to the `feature_engineer.py` script. For more information on WhiteboxTools and its functions: https://www.whiteboxgeo.com/manual/wbt_book/preface.html
 
-How to use:
+**How to use**:
 - Edit and call the script in terminal as 
 ```
 python run_topo_feats.py
