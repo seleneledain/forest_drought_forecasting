@@ -27,6 +27,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── geospatial_data_utils.py            > Helper functions for manipulation raster data in python.
     ├── run_topo_feaets.py                  > Final script for topo feature engineering.
     ├── topo_features.ipynb                 > Example notebook. 
+    ├── create_forest_mask.py               > Generate binary forest mask from forest shapefile in Switzerland.
 
 ```
     
@@ -58,6 +59,8 @@ python mosaic_dem.py
 ### PAIRS
 These scripts are provided if downloading from IBM PAIRS. An account is needed to use the API and credentials must be provided in a text file (`ibmpairskey.txt`)
 
+
+
 ## Topographic feature engineering
 
 Create features from a DEM. Multiple DEMs at different resolutions can be used, features will be computed at different resolutions then matched to a reference (such that all final tiff files have same resolution and shape although representing different data). Resampling is done using nearest interpolation method (pixel splitting).
@@ -77,3 +80,24 @@ python run_topo_feats.py
   - `feat_list`: list of features among [`slope`, `aspect`, `rugg`, `curv`, `twi`]
   - `out_path`: folder where to store generated features
   - `list_suffix`: if using multiple DEMs, provide a list of suffixes to differentiate the features generated from various DEMs
+
+
+
+
+## Forest mask
+
+A raster forest mask can be generated from a forest shapefile for a given bounding box in Switzerland (link to data). The mask is binary (1=forest). \
+You must provide a reference raster which will be used to match the resolution and transform. The `create_forest_mask.py` can be modified such that a reference raster is not provided but rather that the parameters are passed directly to the function.
+
+**How to use**:
+```
+shp_path = 'ForestMask_hull_LV95_20171127.shp'
+bbox = # your bounding box (min_lon, min_lat, max_lon, max_lat)
+target_path = 'your_reference_raster.tiff'
+out_path = 'your_output.tiff'
+crs = 'EPSG:4326'
+
+create_mask_in_bbox(shp_path, bbox, target_path, out_path, crs)
+```
+
+
