@@ -86,7 +86,7 @@ The static data that has been downloaded (forest mask, forest height/composition
 
 
 **How to use**:
-To add raster data:
+- To add raster data:
 ```
 list_features = ['SAND0_5', 'FED100_200'] # The layers to add
 static_dir = # Directory where your data is stored
@@ -95,7 +95,7 @@ cube = add_static_to_minicube(list_features, static_dir, cube, target_crs="epsg:
 The possible features that can be added and their meaning are detailed in `feature_engineering/feature_list.txt`.
 
 
-To add the forest mask (vector data):
+- To add the forest mask (vector data):
 ```
 static_dir = # Directory where your data is stored
 cube = add_mask_to_minicube(static_dir, cube)
