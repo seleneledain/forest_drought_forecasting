@@ -57,7 +57,9 @@ Relevant data includes [Name, (repository)]:
 
 
 
-## Topographic feature engineering
+## Feature engineering
+
+### Topographic features
 
 Create features from a DEM. Multiple DEMs at different resolutions can be used, features will be computed at different resolutions then matched to a reference (such that all final tiff files have same resolution and shape although representing different data). Resampling is done using nearest interpolation method (pixel splitting).
 
@@ -78,22 +80,23 @@ python run_topo_feats.py
   - `list_suffix`: if using multiple DEMs, provide a list of suffixes to differentiate the features generated from various DEMs
 
 
+### Vegetation and soil features
 
+The static data that has been downloaded (forest mask, forest height/composition, soil maps) can be added to the minicubes. The data will be added in the same resolution, projection and within the same bounds as the existing data in the minicube. 
 
-## Forest mask
-
-A raster forest mask can be generated from a forest shapefile for a given bounding box in Switzerland (link to data). The mask is binary (1=forest). \
-You must provide a reference raster which will be used to match the resolution and transform. The `create_forest_mask.py` can be modified such that a reference raster is not provided but rather that the parameters are passed directly to the function.
 
 **How to use**:
+To add raster data:
 ```
-shp_path = 'ForestMask_hull_LV95_20171127.shp'
-bbox = # your bounding box (min_lon, min_lat, max_lon, max_lat)
-target_path = 'your_reference_raster.tiff'
-out_path = 'your_output.tiff'
-crs = 'EPSG:4326'
-
-create_mask_in_bbox(shp_path, bbox, target_path, out_path, crs)
+list_features = ['SAND0_5', 'FED100_200'] # The layers to add
+static_dir = # Directory where your data is stored
+cube = add_static_to_minicube(list_features, static_dir, cube, target_crs="epsg:4326", resampling_method="bilinear")
 ```
+The possible features that can be added and their meaning are detailed in `feature_engineering/feature_list.txt`.
 
 
+To add the forest mask (vector data):
+```
+static_dir = # Directory where your data is stored
+cube = add_mask_to_minicube(static_dir, cube)
+```
