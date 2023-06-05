@@ -21,7 +21,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
 
 ```
     
-## Data Downloading 
+## 1. Data Downloading 
 ### Digital Elevation Model (DEM)
 
 Download the DEM from Swisstopo (at 0.5 or 2 m resolution). The DEM is split into tiles that need to be downloaded individually.\
@@ -57,7 +57,7 @@ Relevant data includes [Name, (repository)]:
 
 
 
-## Feature engineering
+## 2. Feature engineering
 
 ### Topographic features
 
