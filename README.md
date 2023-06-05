@@ -18,6 +18,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── run_topo_feaets.py                  > Final script for topo feature engineering.
     ├── topo_features.ipynb                 > Example notebook. 
     ├── create_forest_mask.py               > Generate binary forest mask from forest shapefile in Switzerland.
+    ├── add_static_data.py                  > Add time-invariant layers to the data cubes.
 
 ```
     
