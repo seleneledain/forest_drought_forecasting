@@ -6,21 +6,11 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
 ```.
 ├── README.md                               > This file contains a description of what is the repository used for and how to use it.
 ├── data_downloading                        > Folder for scripts concering downloading of data.
-    ├── swiss_dem                           > Specific to downloading the DEM from Swisstopo.
-        ├── swiss_dem_download.py           > Download DEM tiles from swisstopo
-        ├── reproject_dem.py                > Reproject the DEM tiles to CRS EPSG:4326
-        ├──  mosaic_dem.py                  > Mosaic the tiles together into one single raster file.
-        ├──  swiss_dem_urls                 > Folder containing download URLs by canton.
-            ├── *.txt                       > URLs for a given canton.
-    ├── pairs                               > Specific to downloading remote sensing data from IBM PAIRS.
-        ├── download_PAIRS_sen_era.py       > Download Sentinel-2 and ERA-5 data. 
-        ├── download_PAIRS_sen_era_agg.py   > Download Sentinel-2 and ERA-5 data aggregated over multiple days.
-        ├── download_swiss_dem.py           > Download the swisstopo DEM that was uploaded to PAIRS.
-        ├── download_forest_mask.py         > Download the forest mask from WSL that was uploaded to PAIRS.
-        ├── download_env.py                 > Download the environemntal (forest, soil) data that was uploaded to PAIRS.
-        ├── VaporPressureDeficit_udf.ipynb  > Notebook containing example of how user-defined-functions (UDFs) were made to compute vapor pressure deficit from aother atmospheric variables.
-        ├── launch_downloads.py             > Automate multiple downloads.
-        ├── ibmpairskey.txt                 > Where you would provide your account credentials for API use.
+    ├── swiss_dem_download.py           > Download DEM tiles from swisstopo
+    ├── reproject_dem.py                > Reproject the DEM tiles to CRS EPSG:4326
+    ├──  mosaic_dem.py                  > Mosaic the tiles together into one single raster file.
+    ├──  swiss_dem_urls                 > Folder containing download URLs by canton.
+        ├── *.txt                       > URLs for a given canton.
 ├── feature_engineering                     > Folder containing scripts for the creation of topographic features from DEM(s).
     ├── create_dem_feat.py                  > Functions to create multiple features from DEM(s) and adjust generated raster files.
     ├── feature_engineer.py                 > Functions to extract individual properties from DEM (based on WhiteboxTools package).
@@ -35,7 +25,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
 ### Digital Elevation Model (DEM)
 
 Download the DEM from Swisstopo (at 0.5 or 2 m resolution). The DEM is split into tiles that need to be downloaded individually.\
-The scripts are found in `data_downloading/swiss_dem/`.
+The scripts are found in `data_downloading/`.
 
 **Disclaimer**: This will produce a high resolution DEM for the whole of Switzerland, ensure you have enough storage space (min 265GB for the 2 m resolution DEM). Furthermore, the data processing might require a lot of RAM. It is advised to only download and process the DEM for your region of interest. 
 
@@ -56,8 +46,14 @@ python mosaic_dem.py
 ```
 
 
-### PAIRS
-These scripts are provided if downloading from IBM PAIRS. An account is needed to use the API and credentials must be provided in a text file (`ibmpairskey.txt`)
+### Vegetation and Soil Data 
+Additional environmental data can be downloaded. Refer to https://github.com/geco-bern/data_management for data availability.
+These are time-invariant data and can be stored locally (~10GB). For ideal use, store all "static data" in a same folder.
+Relevant data includes [Name, (repository)]:
+- Forest mask for Switzerland (forestmaskswiss_waser_2015)
+- Vegetation height Switzerland (vegheight_ginzler_2015)
+- Swiss forest composition (forestcompositionswiss_waser_2017)
+- High-resolution soil maps for the Swiss forest (somach_baltensweiler_2021)
 
 
 
