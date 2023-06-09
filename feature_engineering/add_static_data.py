@@ -183,7 +183,7 @@ dict_static_features = {
 }
 
 
-def match_raster_to_minicube(input_file, minicube, target_crs="epsg:4326", resampling_method="bilinear"):
+def match_raster_to_minicube(input_file, minicube, target_crs="epsg:4326", resampling_method="nearest"):
     """
     Matches an input raster to a target raster and returns a NumPy array.
     :param input_file: path to input raster file
@@ -230,7 +230,7 @@ def match_raster_to_minicube(input_file, minicube, target_crs="epsg:4326", resam
 
 
 
-def add_static_to_minicube(list_features, static_dir, minicube, target_crs="epsg:4326", resampling_method="bilinear"):
+def add_static_to_minicube(list_features, static_dir, minicube, target_crs="epsg:4326", resampling_method="nearest"):
     """
     Add time-invariant (stored locally) to the minicube that matches a target raster.
     
@@ -335,7 +335,7 @@ def create_mask_in_bbox(minicube, shp_path, crs="epsg:4326"):
 
 
 
-def add_mask_to_minicube(static_dir, minicube, target_crs="epsg:4326", resampling_method="bilinear"):
+def add_mask_to_minicube(static_dir, minicube, target_crs="epsg:4326", resampling_method="nearest"):
     """
     Add time-invariant (stored locally) to the minicube that matches a target raster.
     
@@ -360,4 +360,3 @@ def add_mask_to_minicube(static_dir, minicube, target_crs="epsg:4326", resamplin
     minicube = xr.merge([minicube, tmp_ds.rename('FOREST_MASK')])
 
     return minicube
-        
