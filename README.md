@@ -19,6 +19,8 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── topo_features.ipynb                 > Example notebook. 
     ├── create_forest_mask.py               > Generate binary forest mask from forest shapefile in Switzerland.
     ├── add_static_data.py                  > Add time-invariant layers to the data cubes.
+    ├── add_bands.py                        > Add additional features to the data cube (either computed or using add_static_data.py)
+    
 
 ```
     
@@ -81,23 +83,23 @@ python run_topo_feats.py
   - `list_suffix`: if using multiple DEMs, provide a list of suffixes to differentiate the features generated from various DEMs
 
 
-### Vegetation and soil features
+### Adding additional features
 
-The static data that has been downloaded (forest mask, forest height/composition, soil maps) can be added to the minicubes. The data will be added in the same resolution, projection and within the same bounds as the existing data in the minicube. 
+There are two types of features that can be added to the minicube:
+- temporal: bands computed using the raw data in the cube, among ['NDVI']
+- static/local features: include topographic, vegetation and soil features. The possible features that can be added and their meaning are detailed in `feature_engineering/feature_list.txt`.
 
+The data will be added in the same resolution, projection and within the same bounds as the existing data in the minicube. 
 
 **How to use**:
-- To add raster data:
 ```
-list_features = ['SAND0_5', 'FED100_200'] # The layers to add
-static_dir = # Directory where your data is stored
-cube = add_static_to_minicube(list_features, static_dir, cube, target_crs="epsg:4326", resampling_method="bilinear")
-```
-The possible features that can be added and their meaning are detailed in `feature_engineering/feature_list.txt`.
+from add_bands import *
 
+# Define bands to add, and path to files for local bands.
+specs_add_bands = {
+    "bands": ['SAND0_5', 'FED100_200', 'NDVI'],
+    "static_dir": '/Path_to_local_bands/'
+}
 
-- To add the forest mask (vector data):
-```
-static_dir = # Directory where your data is stored
-cube = add_mask_to_minicube(static_dir, cube)
+cube = get_additional_bands(specs_add_bands, cube)
 ```
