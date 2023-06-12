@@ -22,7 +22,7 @@ def save_cube(cube, cube_name, split, cont_targ, root_dir):
     Save cube to split directory. Will create the directories if not existing yet
     
     :param cube: data cube to save
-    :param cube_name: name of .npz file for saving cube
+    :param cube_name: name of .npz file for saving cube. Format is {start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}.npz
     :param split: str, train/test/val or other name of split
     :param cont_targ: any between ['context', 'target']
     :param root_dir: str, root directory where data will be saved and folders created
