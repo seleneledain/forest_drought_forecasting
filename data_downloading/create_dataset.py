@@ -1,0 +1,112 @@
+"""
+Generate minicube dataset
+
+Author: Selene Ledain
+Date: June 12th, 2023
+"""
+
+import os
+import torch
+import warnings
+warnings.filterwarnings('ignore')
+import sys
+# Add the path to the repository containing the file
+sys.path.insert(0, '/Users/led/Documents/earthnet-minicuber/') # To modify
+# Import the module
+from earthnet_minicuber.minicuber import *
+from add_bands import *
+
+
+def save_cube(cube, cube_name, split, cont_targ, root_dir):
+    """
+    Save cube to split directory. Will create the directories if not existing yet
+    
+    :param cube: data cube to save
+    :param cube_name: name of .npz file for saving cube
+    :param split: str, train/test/val or other name of split
+    :param cont_targ: any between ['context', 'target']
+    :param root_dir: str, root directory where data will be saved and folders created
+    """
+    
+    path_to_save = os.path.join(root_dir, split, cont_targ)
+    
+    if not os.path.exists(path_to_save):
+        os.makedirs(path_to_save)
+        print("Created new directory.")
+    
+    numpy_array = cube.to_array().values
+    np.savez(os.path.join(path_to_save,cube_name), numpy_array=numpy_array)
+    
+    
+    
+def obtain_context_target(cube, context, target, split, root_dir, specs):
+    """
+    Split into context target pairs given whole time interval of the cube
+    
+    :param cube: data cube containing data across whole time interval
+    :param context: int, number of context frames
+    :param target: int, number of target frames
+    :param split: str, train/test/val or other name of split
+    :param root_dir: str, root directory where data will be saved and folders created
+    :param specs: minicuber specifications
+    """
+    n_frames = len(cube.time)
+    lon = specs["lon_lat"][0]
+    lat = specs["lon_lat"][1]
+    width = specs["xy_shape"][0]
+    height = specs["xy_shape"][1]
+    
+    if context+target > n_frames:
+        raise Exception("Time interval of data cube is not big enough for request context+target frames! Please download more data, or change context/target length.")
+    
+    n_pairs = n_frames-context-target+1 # number of context-target pairs possible
+    start_t = 0
+    end_t = context+target
+    
+    for pair in range(n_pairs):
+        sub_context = cube.isel(time=slice(start_t+pair, start_t+pair+context))
+        start_yr = sub_context.time.to_index().date[0].year
+        start_month = sub_context.time.to_index().date[0].month
+        start_day = sub_context.time.to_index().date[0].day
+        end_yr = sub_context.time.to_index().date[-1].year
+        end_month = sub_context.time.to_index().date[-1].year
+        end_day = sub_context.time.to_index().date[-1].year
+        cube_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}.npz'
+        # Save sub-cube here with a function
+        save_cube(sub_context, cube_name, split, 'context', root_dir)
+        
+        sub_target = cube.isel(time=slice(start_t+pair+context, end_t+pair))
+        start_yr = sub_target.time.to_index().date[0].year
+        start_month = sub_target.time.to_index().date[0].month
+        start_day = sub_target.time.to_index().date[0].day
+        end_yr = sub_target.time.to_index().date[-1].year
+        end_month = sub_target.time.to_index().date[-1].year
+        end_day = sub_target.time.to_index().date[-1].year
+        cube_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}.npz'
+        # Save sub-cube here with a function
+        save_cube(sub_target, cube_name, split, 'target', root_dir)
+                
+    return 
+
+
+
+def generate_dataset(specs, specs_add_bands, context, target, split, root_dir):
+    """
+    Generate datacubes for a split, with a given context and target length and minicuber specifications.
+    Save the cubes locally.
+    
+    :param specs: specifications for minicuber
+    :param specs_add_band: specifications for additional/static bands in minicubes
+    :param context: context length
+    :param target: target legnth
+    :param split: str, split name
+    :param root_dir: str, path to save data
+    """
+    
+    # Generate cube given specs and specs_add_band
+    emc = Minicuber(specs)
+    cube = emc.load_minicube(specs, compute = True)
+    cube = get_additional_bands(specs_add_bands, cube)
+    
+    obtain_context_target(cube, context, target, split, root_dir, specs)
+    print(f"Created {split} dataset!")
