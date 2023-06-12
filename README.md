@@ -27,7 +27,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     
 ## 1. Data Downloading 
 
-### Create datasets of minicubes
+### 1.1 Create datasets of minicubes
 
 A minicube contains spatio-temporal data ready for machine learning applications. It usually contains satellite imagery and additional remote sensing data, all regridded to a common grid. 
 The creation of the minicubes is built upon the work in Earthnet2021 (https://github.com/earthnet2021/earthnet-minicuber), and now allows downloading and aggregating data from ERA5.
@@ -70,7 +70,7 @@ specs = {
 }
 ```
 
-*IMPORTANT: static layers/features should already be generated and ready for use. Check sections below on how to obtain more data and create additional topographic/vegetaiton/soil features.*\
+*IMPORTANT: static layers/features should already be generated and ready for use. Check sections below (1.2, 1.3, 2.1) on how to obtain more data and create additional topographic/vegetaiton/soil features.*\
 There are two types of features that can be added to the minicube:
 - temporal: bands computed using the raw data in the cube, among ['NDVI']
 - static/local features: include topographic, vegetation and soil features. The possible features that can be added and their meaning are detailed in `feature_engineering/feature_list.txt`.
@@ -93,7 +93,7 @@ target = 1 # number of target frames
 generate_dataset(specs, specs_add_bands, context, target, split, root_dir)
 ```
 
-### Digital Elevation Model (DEM)
+### 1.2 Digital Elevation Model (DEM)
 
 Download the DEM from Swisstopo (at 0.5 or 2 m resolution). The DEM is split into tiles that need to be downloaded individually.\
 The scripts are found in `data_downloading/`.
@@ -117,7 +117,7 @@ python mosaic_dem.py
 ```
 
 
-### Vegetation and Soil Data 
+### 1.3 Vegetation and Soil Data 
 Additional environmental data can be downloaded. Refer to https://github.com/geco-bern/data_management for data availability.
 These are time-invariant data and can be stored locally (~10GB). For ideal use, store all "static data" in a same folder.
 Relevant data includes [Name, (repository)]:
@@ -130,7 +130,7 @@ Relevant data includes [Name, (repository)]:
 
 ## 2. Feature engineering
 
-### Topographic features
+### 2.1 Topographic features
 
 Create features from a DEM. Multiple DEMs at different resolutions can be used, features will be computed at different resolutions then matched to a reference (such that all final tiff files have same resolution and shape although representing different data). Resampling is done using nearest interpolation method (pixel splitting).
 
