@@ -70,7 +70,8 @@ specs = {
 }
 ```
 
-*IMPORTANT: static layers/features should already be generated and ready for use. Check sections below (1.2, 1.3, 2.1) on how to obtain more data and create additional topographic/vegetaiton/soil features.*\
+*IMPORTANT: static layers/features should already be generated and ready for use. Check sections below (1.2, 1.3, 2.1) on how to obtain more data and create additional topographic/vegetaiton/soil features.*
+
 There are two types of features that can be added to the minicube:
 - temporal: bands computed using the raw data in the cube, among ['NDVI']
 - static/local features: include topographic, vegetation and soil features. The possible features that can be added and their meaning are detailed in `feature_engineering/feature_list.txt`.
@@ -89,8 +90,9 @@ root_dir = '' # Directory where data will be saved
 split = 'test'
 context = 3 # number of context frames
 target = 1 # number of target frames
+normalisation = False # If true and split='train', will calculate min/max for each band across time and space and save it to a .npy for later use
 
-generate_dataset(specs, specs_add_bands, context, target, split, root_dir)
+generate_dataset(specs, specs_add_bands, context, target, split, root_dir, normalisation)
 ```
 
 ### 1.2 Digital Elevation Model (DEM)
