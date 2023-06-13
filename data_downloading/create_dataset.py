@@ -32,7 +32,7 @@ def save_cube(cube, cube_name, split, cont_targ, root_dir):
     
     if not os.path.exists(path_to_save):
         os.makedirs(path_to_save)
-        print("Created new directory.")
+        print(f"Created new directory: {path_to_save}.")
     
     numpy_array = cube.to_array().values
     np.savez(os.path.join(path_to_save,cube_name), numpy_array=numpy_array)
@@ -69,8 +69,8 @@ def obtain_context_target(cube, context, target, split, root_dir, specs):
         start_month = sub_context.time.to_index().date[0].month
         start_day = sub_context.time.to_index().date[0].day
         end_yr = sub_context.time.to_index().date[-1].year
-        end_month = sub_context.time.to_index().date[-1].year
-        end_day = sub_context.time.to_index().date[-1].year
+        end_month = sub_context.time.to_index().date[-1].month
+        end_day = sub_context.time.to_index().date[-1].day
         cube_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}.npz'
         # Save sub-cube here with a function
         save_cube(sub_context, cube_name, split, 'context', root_dir)
@@ -80,17 +80,38 @@ def obtain_context_target(cube, context, target, split, root_dir, specs):
         start_month = sub_target.time.to_index().date[0].month
         start_day = sub_target.time.to_index().date[0].day
         end_yr = sub_target.time.to_index().date[-1].year
-        end_month = sub_target.time.to_index().date[-1].year
-        end_day = sub_target.time.to_index().date[-1].year
+        end_month = sub_target.time.to_index().date[-1].month
+        end_day = sub_target.time.to_index().date[-1].day
         cube_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}.npz'
         # Save sub-cube here with a function
         save_cube(sub_target, cube_name, split, 'target', root_dir)
                 
     return 
 
+def save_min_max(cube, split, root_dir, specs):
+    
+    min_vals = cube.min().to_array().values
+    max_vals = cube.max().to_array().values
+    
+    # Need to name the cube intelligently and save min/max to numpy array
+    lon = specs["lon_lat"][0]
+    lat = specs["lon_lat"][1]
+    width = specs["xy_shape"][0]
+    height = specs["xy_shape"][1]
+    start_yr = cube.time.to_index().date[0].year
+    start_month = cube.time.to_index().date[0].month
+    start_day = cube.time.to_index().date[0].day
+    end_yr = cube.time.to_index().date[-1].year
+    end_month = cube.time.to_index().date[-1].year
+    end_day = cube.time.to_index().date[-1].year
+    cube_stat_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}'
+    # Save values
+    path_to_save = os.path.join(root_dir, split, cube_stat_name)
+    
+    np.save(path_to_save+'_min.npy', min_vals)
+    np.save(path_to_save+'_max.npy', max_vals)
 
-
-def generate_dataset(specs, specs_add_bands, context, target, split, root_dir):
+def generate_samples(specs, specs_add_bands, context, target, split, root_dir, normalisation=False):
     """
     Generate datacubes for a split, with a given context and target length and minicuber specifications.
     Save the cubes locally.
@@ -101,6 +122,7 @@ def generate_dataset(specs, specs_add_bands, context, target, split, root_dir):
     :param target: target legnth
     :param split: str, split name
     :param root_dir: str, path to save data
+    :param normalisation: boolean. Compute min/max in space and time for each variables and save values
     """
     
     # Generate cube given specs and specs_add_band
@@ -108,5 +130,12 @@ def generate_dataset(specs, specs_add_bands, context, target, split, root_dir):
     cube = emc.load_minicube(specs, compute = True)
     cube = get_additional_bands(specs_add_bands, cube)
     
+
+    # Split to context/target pairs and save
     obtain_context_target(cube, context, target, split, root_dir, specs)
-    print(f"Created {split} dataset!")
+    print(f"Created {split} samples from cube!")
+    
+    # Compute normalisation stats (min, max) if normalisation=True (usually for train split)
+    if normalisation and split=='train':
+        save_min_max(cube, split, root_dir, specs)
+    
