@@ -39,7 +39,7 @@ def save_cube(cube, cube_name, split, cont_targ, root_dir):
     
     
     
-def obtain_context_target(cube, context, target, split, root_dir, specs):
+def obtain_context_target(cube, context, target, split, root_dir, specs, shift=0):
     """
     Split into context target pairs given whole time interval of the cube
     
@@ -49,6 +49,7 @@ def obtain_context_target(cube, context, target, split, root_dir, specs):
     :param split: str, train/test/val or other name of split
     :param root_dir: str, root directory where data will be saved and folders created
     :param specs: minicuber specifications
+    :param shift: int, number of itmeframes of shift between ERA5 and S2. The final dates in the xarray will be the non-shifted ones
     """
     n_frames = len(cube.time)
     lon = specs["lon_lat"][0]
@@ -56,38 +57,57 @@ def obtain_context_target(cube, context, target, split, root_dir, specs):
     width = specs["xy_shape"][0]
     height = specs["xy_shape"][1]
     
-    if context+target > n_frames:
+    if context+target > n_frames-shift:
         raise Exception("Time interval of data cube is not big enough for request context+target frames! Please download more data, or change context/target length.")
     
-    n_pairs = n_frames-context-target+1 # number of context-target pairs possible
+    n_pairs = n_frames-shift-context-target+1 # number of context-target pairs possible
     start_t = 0
     end_t = context+target
     
     for pair in range(n_pairs):
-        sub_context = cube.isel(time=slice(start_t+pair, start_t+pair+context))
+        if shift>0:
+            era_variable_names = [name for name in list(cube.variables) if name.startswith('era5_')]
+            era_data = cube[filtered_variable_names]
+            sub_context_era = era_data.isel(time=slice(start_t+pair+shift, start_t+pair+context+shift))
+            other_variable_names = [name for name in list(cube.variables) if not name.startswith('era5_')]
+            other_data =  cube[other_variable_names]
+            sub_context_other = other_data.isel(time=slice(start_t+pair, start_t+pair+context))
+            sub_context_era['time'] = sub_context_other.time
+            sub_context = xr.merge([sub_context_other, sub_context_era])
+        else:
+            sub_context = cube.isel(time=slice(start_t+pair, start_t+pair+context))
         start_yr = sub_context.time.to_index().date[0].year
         start_month = sub_context.time.to_index().date[0].month
         start_day = sub_context.time.to_index().date[0].day
         end_yr = sub_context.time.to_index().date[-1].year
         end_month = sub_context.time.to_index().date[-1].month
         end_day = sub_context.time.to_index().date[-1].day
-        cube_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}.npz'
+        cube_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}_{shift}.npz'
         # Save sub-cube here with a function
         save_cube(sub_context, cube_name, split, 'context', root_dir)
         
-        sub_target = cube.isel(time=slice(start_t+pair+context, end_t+pair))
+        if shift>0:
+            era_variable_names = [name for name in list(cube.variables) if name.startswith('era5_')]
+            era_data = cube[filtered_variable_names]
+            sub_target_era = era_data.isel(time=slice(start_t+pair+context+shift, end_t+pair+shift))
+            other_variable_names = [name for name in list(cube.variables) if not name.startswith('era5_')]
+            other_data =  cube[other_variable_names]
+            sub_target_other = other_data.isel(time=slice(start_t+pair+context, end_t+pair))
+            sub_target_era['time'] = sub_target_other.time
+            sub_target = xr.merge([sub_target_other, sub_target_era])
+        else:
+            sub_target = cube.isel(time=slice(start_t+pair+context, end_t+pair))
         start_yr = sub_target.time.to_index().date[0].year
         start_month = sub_target.time.to_index().date[0].month
         start_day = sub_target.time.to_index().date[0].day
         end_yr = sub_target.time.to_index().date[-1].year
         end_month = sub_target.time.to_index().date[-1].month
         end_day = sub_target.time.to_index().date[-1].day
-        cube_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}.npz'
+        cube_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}_{shift}.npz'
         # Save sub-cube here with a function
         save_cube(sub_target, cube_name, split, 'target', root_dir)
-                
-    return 
 
+    return 
 def save_min_max(cube, split, root_dir, specs):
     
     min_vals = cube.min().to_array().values
@@ -111,7 +131,7 @@ def save_min_max(cube, split, root_dir, specs):
     np.save(path_to_save+'_min.npy', min_vals)
     np.save(path_to_save+'_max.npy', max_vals)
 
-def generate_samples(specs, specs_add_bands, context, target, split, root_dir, normalisation=False):
+def generate_samples(specs, specs_add_bands, context, target, split, root_dir, normalisation=False, shift=0):
     """
     Generate datacubes for a split, with a given context and target length and minicuber specifications.
     Save the cubes locally.
@@ -123,6 +143,7 @@ def generate_samples(specs, specs_add_bands, context, target, split, root_dir, n
     :param split: str, split name
     :param root_dir: str, path to save data
     :param normalisation: boolean. Compute min/max in space and time for each variables and save values
+    :param shift: int, number of itmeframes of shift between ERA5 and S2. The final dates in the xarray will be the non-shifted ones
     """
     
     # Generate cube given specs and specs_add_band
@@ -132,10 +153,11 @@ def generate_samples(specs, specs_add_bands, context, target, split, root_dir, n
     
 
     # Split to context/target pairs and save
-    obtain_context_target(cube, context, target, split, root_dir, specs)
+    obtain_context_target(cube, context, target, split, root_dir, specs, shift)
     print(f"Created {split} samples from cube!")
     
     # Compute normalisation stats (min, max) if normalisation=True (usually for train split)
     if normalisation and split=='train':
         save_min_max(cube, split, root_dir, specs)
-    
+        
+    return
