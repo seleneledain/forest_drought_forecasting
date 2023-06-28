@@ -12,6 +12,8 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├──  swiss_dem_urls                     > Folder containing download URLs by canton.
         ├── *.txt                           > URLs for a given canton.
     ├──  create_dataset.py                  > Generate a dataset of minicubes.
+    ├──  cloud_cleaning.py                  > Remove and replace cloud coevred values in Sentinel-2 data.
+    ├──  config.py                          > Configuration file for dataset creation.
 ├── feature_engineering                     > Folder containing scripts for the creation of topographic features from DEM(s).
     ├── create_dem_feat.py                  > Functions to create multiple features from DEM(s) and adjust generated raster files.
     ├── feature_engineer.py                 > Functions to extract individual properties from DEM (based on WhiteboxTools package).
@@ -29,14 +31,28 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     
 ## 1. Data Downloading 
 
-### 1.1 Create datasets of minicubes
+### 1.1 Create datasets from minicubes
 
-A minicube contains spatio-temporal data ready for machine learning applications. It usually contains satellite imagery and additional remote sensing data, all regridded to a common grid. 
-The creation of the minicubes is built upon the work in Earthnet2021 (https://github.com/earthnet2021/earthnet-minicuber), and now allows downloading and aggregating data from ERA5.
+To create pixel timeseries from multiple data sources, we use the earthnet-minicuber package (https://github.com/geco-bern/earthnet-minicuber) to obtain spatio-temporal data (time-series of a scene for multiple bands). A minicube contains spatio-temporal data ready for machine learning applications. It usually contains satellite imagery and additional remote sensing data, all regridded to a common grid.\
+To this cube, custom/local data can be added. Cloud removal on Sentinel-2 data can be done and pixel timeseries are sampled from the scene using a forest mask.
 
 **Setup**
-1. Download the required code to generate minicubes: https://github.com/seleneledain/earthnet-minicuber
-2. Edit `create_dataset.py` to import the code you just downloaded as a module
+The format of the data that will be downloaded and the samples that will be created are set up in the `data_downloading/config.py`. The parameters to modify are:
+- `specs`: Specifications passed to earthnet-minicuber, defining region, time and bands of interest. For more details of the possible cube specifications, check the `earthnet-minicuber` code. 
+- `specs_add_bands`:  Specifications for adding locally stored data (including forest mask). The data will be added in the same resolution, projection and within the same bounds as the existing data in the minicube. There are two types of features that can be added to the minicube.
+    - temporal: bands computed using the raw data in the cube, among ['NDVI']
+    - static/local features: include topographic, vegetation and soil features. The possible features that can be added and their meaning are detailed in `feature_engineering/feature_list.txt`.
+- `root_dir`: Where generated data should be stored.
+- `split`: train/validation/test
+- `context`: Number of context frames
+- `target`: Number of target frames
+- `shift`: Shift between Sentinel-2 and ERA5. ERA5 will be shifted n steps forward with respect to Sentinel-2, but the timestamps used for naming files are those of Sentinel-2.
+- `cloud_cleaning`: maximum number of consecutive missing values (in NDVI timeseries) for which cloud cleaning will be performed. If > cloud_cleaning, the pixel wil not be used as a data sample. If 0/None no cloud cleaning is done.
+- `normalisation`: If True, compute min/max for each band in the training set
+
+**How to create dataset**
+1. Download the required code to generate minicubes: https://github.com/geco-bern/earthnet-minicuber
+2. In `data_downloading.create_dataset.py` add the path to the downloaded repository
 ```
 import sys
 # Add the path to the repository containing the file
@@ -44,57 +60,14 @@ sys.path.insert(0, 'Path_to_code/earthnet-minicuber/')
 # Import the module
 from earthnet_minicuber.minicuber import *
 ```
-
-**How to create dataset**
+3. Edit `data_downloading/config.py`
+4. Launch the dataset creation
 ```
-from create_dataset import *
-```
+from data_downloading.create_dataset import *
+import data_downloading.config as config
 
-Define the parameters for the cube you want to create. Here the cube is the whole dataset, therefore the time interval represents the interval in which the whole dataset should be contained (and not a single sample). Indivudal samples will then be extracted from this cube depending on the context/target length you desire.\
-For more details of the possible cube specifications, check the `earthnet-minicuber` code: https://github.com/seleneledain/earthnet-minicuber
-```
-# Data from Microsoft Planetary Computer (time-series, satellite imagery, ERA5...)
-specs = {
-    "lon_lat": (6.73570, 46.93912), # center pixel Creux du Van
-    "xy_shape": (256, 256), # width, height of cutout around center pixel
-    "resolution": 20, # in meters.. will use this on a local UTM grid..
-    "time_interval": "2018-07-01/2018-08-01",
-    "providers": [
-        {
-            "name": "s2",
-            "kwargs": {"bands": ["B02", "B03", "B04", "B08", "B8A"], "best_orbit_filter": True, "five_daily_filter": False, "brdf_correction": True, "cloud_mask": True, "aws_bucket": "planetary_computer"}
-        },
-        {
-          "name": "era5",
-           "kwargs": {"bands": ['sr', 't', 'mint'], "aws_bucket": "planetary_computer", "n_daily_filter": None, "agg_list": ['min', 'max', 'sum'], "match_s2": True} 
-        }        
-        ]
-}
-```
-
-*IMPORTANT: static layers/features should already be generated and ready for use. Check sections below (1.2, 1.3, 2.1) on how to obtain more data and create additional topographic/vegetaiton/soil features.*
-
-There are two types of features that can be added to the minicube:
-- temporal: bands computed using the raw data in the cube, among ['NDVI']
-- static/local features: include topographic, vegetation and soil features. The possible features that can be added and their meaning are detailed in `feature_engineering/feature_list.txt`.
-The data will be added in the same resolution, projection and within the same bounds as the existing data in the minicube. 
-```
-specs_add_bands = {
-    "bands": ['SAND0_5', 'FED100_200', 'NDVI'],
-    "static_dir": 'Path_to_local_data/'
-}
-```
-
-
-Generate a dataset for a given split
-```
-root_dir = '' # Directory where data will be saved
-split = 'test'
-context = 3 # number of context frames
-target = 1 # number of target frames
-normalisation = False # If true and split='train', will calculate min/max for each band across time and space and save it to a .npy for later use
-
-generate_dataset(specs, specs_add_bands, context, target, split, root_dir, normalisation)
+generate_samples(specs=config.specs, specs_add_bands=config.specs_add_bands, context=config.context, target=config.target, split=config.split, 
+                                root_dir=config.root_dir, shift=config.shift, cloud_cleaning=config.cloud_cleaning, normalisation=config.normalisation)
 ```
 
 ### 1.2 Digital Elevation Model (DEM)
