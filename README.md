@@ -36,7 +36,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
 To create pixel timeseries from multiple data sources, we use the earthnet-minicuber package (https://github.com/geco-bern/earthnet-minicuber) to obtain spatio-temporal data (time-series of a scene for multiple bands). A minicube contains spatio-temporal data ready for machine learning applications. It usually contains satellite imagery and additional remote sensing data, all regridded to a common grid.\
 To this cube, custom/local data can be added. Cloud removal on Sentinel-2 data can be done and pixel timeseries are sampled from the scene using a forest mask.
 
-**Setup**
+**Setup**\
 The format of the data that will be downloaded and the samples that will be created are set up in the `data_downloading/config.py`. The parameters to modify are:
 - `specs`: Specifications passed to earthnet-minicuber, defining region, time and bands of interest. For more details of the possible cube specifications, check the `earthnet-minicuber` code. 
 - `specs_add_bands`:  Specifications for adding locally stored data (including forest mask). The data will be added in the same resolution, projection and within the same bounds as the existing data in the minicube. There are two types of features that can be added to the minicube.
