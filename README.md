@@ -21,6 +21,8 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── create_forest_mask.py               > Generate binary forest mask from forest shapefile in Switzerland.
     ├── add_static_data.py                  > Add time-invariant layers to the data cubes.
     ├── add_bands.py                        > Add additional features to the data cube (either computed or using add_static_data.py)
+    ├── feature_list.txt                    > List of locally stored features and their description.
+
     
 
 ```
