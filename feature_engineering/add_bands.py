@@ -4,8 +4,9 @@ Add features that cannot be obtained online (are stored locally or need to be co
 Author: Selene Ledain
 Date: June 9th, 2023
 """
-
-from add_static_data import *
+#import sys
+#sys.path.append('..') 
+from feature_engineering.add_static_data import *
 
 
 BANDS_DESCRIPTION = {

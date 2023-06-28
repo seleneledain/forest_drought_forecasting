@@ -14,8 +14,10 @@ import sys
 sys.path.insert(0, '/Users/led/Documents/earthnet-minicuber/') # To modify
 # Import the module
 from earthnet_minicuber.minicuber import *
-from add_bands import *
-from cloud_cleaning import *
+
+sys.path.append('..')  # Add parent directory to the sys.path
+from data_downloading.cloud_cleaning import *
+from feature_engineering.add_bands import *
 
 
 def save_cube(cube, cube_name, split, cont_targ, root_dir):
@@ -276,7 +278,7 @@ def extract_pixel_timeseries(cube_context, cube_target, shift, split, root_dir):
     # Get all the pixels that satisfy condition (forest mask + valid after cloud cleaning)
     for i_lat, lat in enumerate(cube_context.lat):
         for i_lon, lon in enumerate(cube_context.lon):
-            if cube_context.sel(lat=lat, lon=lon).to_sample.values and cube_context.sel(lat=lat, lon=lon).FOREST_MASK.values:
+            if cube_context.sel(lat=lat, lon=lon).to_sample.values: # and cube_context.sel(lat=lat, lon=lon).FOREST_MASK.values:
                 pixel_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon.values}_{lat.values}_{width}_{height}_{shift}.npz'
                 save_context_target(cube_context.sel(lat=lat, lon=lon), cube_target.sel(lat=lat, lon=lon), pixel_name, split, root_dir)
 

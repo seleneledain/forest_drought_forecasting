@@ -15,7 +15,7 @@ import xarray as xr
 import argparse
 
 
-def create_mask_in_bbox(shp_path, bbox, target_path, out_path, crs):
+def create_mask_in_bbox(minicube, static_dir, shp_path, crs="epsg:4326"):
     """
     :param shp_path: path to forest shapefile
     :param bbox: (xmin, ymin, xmax, ymax) where the forest mask should be contained.
@@ -24,22 +24,29 @@ def create_mask_in_bbox(shp_path, bbox, target_path, out_path, crs):
     :param crs: CRS to use for the created mask. Format is 'EPSG:4326'
     """
     
-    """
-    # Read args
-    shp_path = args.shp_path
-    bbox = tuple(args.bbox)
-    target_path = args.target_path
-    out_path = args.out_path
-    crs = args.crs
-    """
-    
-    print(f'Generating mask...')
-    
     # Load the shapefile
-    shapefile = gpd.read_file(shp_path)
+    shapefile = gpd.read_file(static_dir+shp_path)
     
     # Reproject the shapefile to the target CRS
     reprojected_shapefile = shapefile.to_crs(crs)
+    
+    # Get metadata of target raster
+    """
+    source_dataset = rasterio.open(target_path)
+    transform = source_dataset.transform
+    width = source_dataset.width 
+    height = source_dataset.height
+    """
+    width = len(minicube['lon'])
+    height = len(minicube['lat'])
+
+    # Bounds
+    minX, maxX = minicube['lon'].min().item(), minicube['lon'].max().item()
+    minY, maxY = minicube['lat'].min().item(), minicube['lat'].max().item()
+    bbox = (minX, minY, maxX, maxY)
+    
+    # Transform
+    transform = rasterio.transform.from_bounds(minX, minY, maxX, maxY, width, height)
     
     # Clip the shapefile to the bounding box
     bounding_box = box(*bbox)
@@ -48,39 +55,21 @@ def create_mask_in_bbox(shp_path, bbox, target_path, out_path, crs):
     # Filter out empty geometries
     non_empty_geoseries = clipped_shapefile[~clipped_shapefile.is_empty]
     
-    # Get metadata of target raster
-    source_dataset = rasterio.open(target_path)
-    transform = source_dataset.transform
-    width = source_dataset.width 
-    height = source_dataset.height
-    dtype = source_dataset.dtypes[0]
-    count = source_dataset.count
+    # Rasterize the clipped shapefile
+    shapes = ((geom, 1) for geom in non_empty_geoseries.geometry)
+    burned = features.rasterize(shapes=shapes, out_shape=(height, width), transform=transform)
 
-    print('opening dataset')
+    return burned
+
     # Create the raster dataset
-    with rasterio.open(out_path, 'w', driver='GTiff', height=height, width=width, count=count, dtype=dtype, crs=crs, transform=transform) as dataset:
+    #with rasterio.open(out_path, 'w', driver='GTiff', height=height, width=width, count=count, dtype=dtype, crs=crs, transform=transform) as dataset:
 
-        # Rasterize the clipped shapefile
-        shapes = ((geom, 1) for geom in non_empty_geoseries.geometry)
-        burned = features.rasterize(shapes=shapes, out_shape=(height, width), transform=transform)
-
-        # Write the burned raster to the dataset
-        dataset.write_band(1, burned)
-        print('Done!')
         
-
-"""
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--shp_path', type=str)
-    parser.add_argument('--bbox', nargs='+')
-    parser.add_argument('--target_path', type=str)
-    parser.add_argument('--out_path', type=str)
-    parser.add_argument('--crs', type=str)
-
-    args = parser.parse_args()
-
-    create_mask_in_bbox(args)
-    
-# python create_mask_in_bbox --shp_path str --bbox float float float float --target_path str --out_path str --crs str
-"""
+        
+        # Write the burned raster to the dataset
+        #dataset.write_band(1, burned)
+        #print('Done!')
+        
+        #return burned
+        
+        
