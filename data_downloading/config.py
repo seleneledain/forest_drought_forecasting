@@ -12,7 +12,7 @@ specs = {
         },
         {
           "name": "era5",
-           "kwargs": {"bands": ['sp', 'tp', 'sr', 't', 'maxt', 'mint', 'ap', 'dp'], "aws_bucket": "planetary_computer", "n_daily_filter": None, "agg_list": ['mean', 'sum', 'sum', 'mean', 'max', 'min', 'mean', 'mean'], "match_s2": True} 
+           "kwargs": {"bands": ['sp', 'tp', 'sr', 't', 'maxt', 'mint', 'ap', 'dp'], "aws_bucket": "s3", "n_daily_filter": None, "agg_list": ['mean', 'sum', 'sum', 'mean', 'max', 'min', 'mean', 'mean'], "match_s2": True} 
         }        
         ]
 }
@@ -20,7 +20,7 @@ specs = {
 
 specs_add_bands = {
     "bands": ['SAND0_5', 'FED100_200', 'NDVI'],
-    "static_dir": '/Users/led/Desktop/Master_Thesis/Data/original_data/soil_maps/'
+    "static_dir": '/Users/led/Desktop/Master_Thesis/Data/original_data/soil_maps/' # Path_to_local_data
 }
 
 root_dir = ''
