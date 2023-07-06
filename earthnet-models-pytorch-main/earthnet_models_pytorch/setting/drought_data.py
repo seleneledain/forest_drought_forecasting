@@ -1,0 +1,143 @@
+
+from typing import Union, Optional
+
+import argparse
+import copy
+import multiprocessing
+import re
+
+from pathlib import Path
+
+import numpy as np
+import pytorch_lightning as pl
+import torch
+
+from torch import nn
+from torch.utils.data import Dataset, DataLoader, random_split
+
+from earthnet_models_pytorch.utils import str2bool
+
+class DroughtDataset(Dataset):
+
+    def __init__(self, folder: Union[Path, str]):
+        if not isinstance(folder, Path):
+            folder = Path(folder)
+        assert (not {"target","context"}.issubset(set([d.name for d in folder.glob("*") if d.is_dir()])))
+
+        self.filepaths = sorted(list(folder.glob("**/*.npz")))
+        self.type = np.float32
+
+    def __getitem__(self, idx: int) -> dict:
+        
+        filepath = self.filepaths[idx]
+
+        npz = np.load(filepath)
+
+        context = npz["context"].reshape((npz["context"].shape[1],npz["context"].shape[0], 1, 1)) # seq_len, input_size/num features, height, width
+        target =  npz["target"].reshape((npz["target"].shape[1],npz["target"].shape[0], 1, 1))
+
+        # Normalise here: load all files in train with _min/max.npy 
+
+        data = {
+            "context": [
+                torch.from_numpy(context)
+            ],
+            "target": [
+                torch.from_numpy(target)
+            ],
+            "filepath": str(filepath),
+            "cubename": self.__name_getter(filepath)
+        }
+
+        npz.close()
+
+        return data
+
+    def __len__(self) -> int:
+        return len(self.filepaths)
+
+    def __name_getter(self, path: Path) -> str:
+        """Helper function gets Cubename from a Path
+
+        Args:
+            path (Path): One of Path/to/cubename.npz and Path/to/experiment_cubename.npz
+
+        Returns:
+            [str]: cubename (has format startyear_startmonth_startday_endyear_endmonth_endday_lon_lat_xsize_ysize_shift.npz)
+        """        
+
+        pattern = r'\d{4}.*(?=\.npz)'
+        match = re.search(pattern, path.name)  
+        if match:
+            cubename = match.group(0)
+            return cubename
+        else:
+            return None 
+        
+
+
+class DroughtDataModule(pl.LightningDataModule):
+
+    __TRACKS__ = {
+        "iid": ("iid_test_split/context/","iid_test"),
+        "ood": ("ood_test_split/context/","ood_test"),
+        "ex": ("extreme_test_split/context/","extreme_test"),
+        "sea": ("seasonal_test_split/context/", "seasonal_test"),
+        "full_sea": ("seasonal_test_filtered", "seasonal_test")
+    }
+
+    def __init__(self, hparams: argparse.Namespace):
+        super().__init__()
+        if hasattr(self, "save_hyperparameters"):
+            self.save_hyperparameters(copy.deepcopy(hparams))
+        else:
+            self.hparams = copy.deepcopy(hparams)
+        self.base_dir = Path(hparams.base_dir)
+        
+    @staticmethod
+    def add_data_specific_args(parent_parser: Optional[Union[argparse.ArgumentParser,list]] = None):
+        if parent_parser is None:
+            parent_parser = []
+        elif not isinstance(parent_parser, list):
+            parent_parser = [parent_parser]
+        
+        parser = argparse.ArgumentParser(parents = parent_parser, add_help = False)
+
+        parser.add_argument('--base_dir', type = str, default = "data/datasets/")
+        parser.add_argument('--test_track', type = str, default = "iid")
+
+        parser.add_argument('--val_pct', type = float, default = 0.05)
+        parser.add_argument('--val_split_seed', type = float, default = 42)
+
+        parser.add_argument('--train_batch_size', type = int, default = 1)
+        parser.add_argument('--val_batch_size', type = int, default = 1)
+        parser.add_argument('--test_batch_size', type = int, default = 1)
+
+        parser.add_argument('--num_workers', type = int, default = multiprocessing.cpu_count())
+
+        return parser
+    
+    def setup(self, stage: str = None):
+
+        if stage == 'fit' or stage is None:
+            data_corpus = DroughtDataset(self.base_dir/"train")
+            
+            val_size = int(self.hparams.val_pct * len(data_corpus))
+            train_size = len(data_corpus) - val_size
+
+            try: #PyTorch 1.5 safe....
+                self.data_train, self.data_val = random_split(data_corpus, [train_size, val_size], generator=torch.Generator().manual_seed(int(self.hparams.val_split_seed)))
+            except TypeError:
+                self.data_train, self.data_val = random_split(data_corpus, [train_size, val_size])
+
+        if stage == 'test' or stage is None:
+            self.data_test = DroughtDataset(self.base_dir/self.__TRACKS__[self.hparams.test_track][0])
+            
+    def train_dataloader(self) -> DataLoader:
+        return DataLoader(self.data_train, batch_size=self.hparams.train_batch_size, num_workers = self.hparams.num_workers,pin_memory=True,drop_last=True)
+
+    def val_dataloader(self) -> DataLoader:
+        return DataLoader(self.data_val, batch_size=self.hparams.val_batch_size, num_workers = self.hparams.num_workers, pin_memory=True)
+
+    def test_dataloader(self) -> DataLoader:
+        return DataLoader(self.data_test, batch_size=self.hparams.test_batch_size, num_workers = self.hparams.num_workers, pin_memory=True)
