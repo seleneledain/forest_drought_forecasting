@@ -237,7 +237,7 @@ def generate_samples(config):
     
     # Compute normalisation stats (min, max) if normalisation=True (usually for train split)
     if config.normalisation and config.split=='train':
-        save_min_max(cube, config.split, config.root_dir, config.specs)
+        save_min_max(cube.drop_vars(config.bands_to_drop), config.split, config.root_dir, config.specs)
         print('Computed normalisation statistics')
         
     return 
