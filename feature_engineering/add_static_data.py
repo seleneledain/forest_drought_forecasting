@@ -140,7 +140,7 @@ def get_raster_crs(raster_file):
 
     return crs
 
-def match_raster_to_target(input_file, target_file, target_crs="epsg:4326", resampling_method="bilinear"):
+def match_raster_to_target(input_file, target_file, target_crs="epsg:4326", resampling_method="nearest"):
     """
     Matches an input raster to a target raster and returns a NumPy array.
     :param input_file: path to input raster file
@@ -178,7 +178,7 @@ def match_raster_to_target(input_file, target_file, target_crs="epsg:4326", resa
                                outputBounds=(minX, minY, maxX, maxY),
                                xRes=target_geo_transform[1], yRes=target_geo_transform[5],
                                resampleAlg=resampling_method)
-
+    
     if output_dataset is None:
         print("Failed to create output dataset.")
         return None
@@ -268,9 +268,10 @@ def match_raster_to_minicube(input_file, minicube, target_crs="epsg:4326", resam
     output_projection = target_crs
     
     output_dataset = gdal.Warp('', input_dataset, format='MEM', dstSRS=target_crs,
-                               outputBounds=(minX-xRes/2, minY+yRes/2, maxX+xRes/2, maxY-yRes/2),
-                               xRes=xRes, yRes=yRes,
-                               resampleAlg=resampling_method)
+                           outputBounds=(minX-xRes/2, minY+yRes/2, maxX+xRes/2, maxY-yRes/2),
+                           xRes=xRes, yRes=yRes,
+                           resampleAlg=resampling_method, outputType=gdal.GDT_Float32, dstNodata=-9999)
+
 
     if output_dataset is None:
         print("Failed to create output dataset.")

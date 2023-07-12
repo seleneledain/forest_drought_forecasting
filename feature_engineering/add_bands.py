@@ -50,7 +50,8 @@ BANDS_DESCRIPTION = {
     "PH30_60": "pH 30-60 cm", 
     "PH5_15": "pH 5-15 cm", 
     "PH60_100": "pH 60-100 cm",
-    "NDVI": "Normalized Difference Vegetation Index"
+    "NDVI": "Normalized Difference Vegetation Index",
+    "NDWI": "Normalized Difference Water Index"
 }
 
 def get_attrs_for_band(band, provider):
@@ -75,6 +76,18 @@ def compute_ndvi(cube):
         cube['s2_ndvi'] = ndvi
     
     return cube
+
+def compute_ndwi(cube):
+    
+    if ('s2_B03' not in cube.data_vars) or ('s2_B08' not in cube.data_vars):
+        raise Exception("Cannot compute NDVI without B03 and/or B08")
+    else:
+        green_band = cube['s2_B03']  # Red band
+        nir_band = cube['s2_B08']  # Near-infrared band
+        ndvi = (nir_band - green_band) / (nir_band + green_band)
+        cube['s2_ndwi'] = ndwi
+    
+    return cube
         
     
 def get_additional_bands(specs_add_bands, cube):
@@ -88,6 +101,10 @@ def get_additional_bands(specs_add_bands, cube):
         to_add.remove('NDVI')
         cube = compute_ndvi(cube)
         cube["s2_ndvi"].attrs = get_attrs_for_band('NDVI', 'Sentinel 2')
+    if 'NDVW' in to_add:
+        to_add.remove('NDWI')
+        cube = compute_ndwi(cube)
+        cube["s2_ndwi"].attrs = get_attrs_for_band('NDWI', 'Sentinel 2')
     if 'FOREST_MASK' in to_add:
         to_add.remove('FOREST_MASK')
         cube = add_mask_to_minicube(specs_add_bands["static_dir"], cube)

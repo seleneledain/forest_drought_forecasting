@@ -7,6 +7,8 @@ Date: June 12th, 2023
 
 import os
 import torch
+import glob
+import xarray as xr
 import warnings
 warnings.filterwarnings('ignore')
 import sys
@@ -20,23 +22,32 @@ from data_downloading.cloud_cleaning import *
 from feature_engineering.add_bands import *
 
 
-def save_cube(cube, cube_name, split, cont_targ, root_dir):
+def save_cube(cube, split, root_dir, lon_lat):
     """
     Save cube to split directory. Will create the directories if not existing yet
     
     :param cube: data cube to save
-    :param cube_name: name of .npz file for saving cube. Format is {start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}.npz
     :param split: str, train/test/val or other name of split
-    :param cont_targ: any between ['context', 'target']
     :param root_dir: str, root directory where data will be saved and folders created
+    :param lon_lat: tuple, center coordinates of the cube
     """
     
-    path_to_save = os.path.join(root_dir, split, cont_targ)
+    path_to_save = os.path.join(root_dir, split, 'cubes')
     
     if not os.path.exists(path_to_save):
         os.makedirs(path_to_save)
         print(f"Created new directory: {path_to_save}.")
     
+    start_yr = cube.time.to_index().date[0].year
+    start_month = cube.time.to_index().date[0].month
+    start_day = cube.time.to_index().date[0].day
+    end_yr = cube.time.to_index().date[-1].year
+    end_month = cube.time.to_index().date[-1].month
+    end_day = cube.time.to_index().date[-1].day
+    width = len(cube.lon) 
+    height = len(cube.lat)
+    cube_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon_lat[0]}_{lon_lat[1]}_{width}_{height}.npz'
+
     numpy_array = cube.to_array().values
     np.savez(os.path.join(path_to_save,cube_name), data=numpy_array)
 
@@ -157,11 +168,12 @@ def save_min_max(cube, split, root_dir, specs):
     np.save(path_to_save+'_min.npy', min_vals)
     np.save(path_to_save+'_max.npy', max_vals)
 
-def generate_samples(specs, specs_add_bands, context, target, split, root_dir, cloud_cleaning=0, normalisation=False, shift=0):
+def generate_samples(config):
     """
     Generate datacubes for a split, with a given context and target length and minicuber specifications.
     Save the cubes locally.
     
+    Config containing
     :param specs: specifications for minicuber
     :param specs_add_band: specifications for additional/static bands in minicubes
     :param context: context length
@@ -171,34 +183,68 @@ def generate_samples(specs, specs_add_bands, context, target, split, root_dir, c
     :param normalisation: boolean. Compute min/max in space and time for each variables and save values
     :param shift: int, number of itmeframes of shift between ERA5 and S2. The final dates in the xarray will be the non-shifted ones
     """
+
     
-    # Generate cube given specs and specs_add_band
-    emc = Minicuber(specs)
-    cube = emc.load_minicube(specs, compute = True)
-    print('Downloaded data')
-    cube = get_additional_bands(specs_add_bands, cube)
-    print('Added local data')
+    start_yr = config.specs["time_interval"].split("-")[0]
+    start_month = config.specs["time_interval"].split("-")[1]
+    end_yr = config.specs["time_interval"].split("-")[2].split("/")[1]
+    end_month = config.specs["time_interval"].split("-")[3]
+    lon = config.specs["lon_lat"][0]
+    lat = config.specs["lon_lat"][1]
+    width = config.specs["xy_shape"][0]
+    height = config.specs["xy_shape"][1]
+    cube_name = f'{start_yr}_{start_month}*{end_yr}_{end_month}*{lon}_{lat}_{width}_{height}.npz'
+    search_cube = glob.glob(os.path.join(config.root_dir, config.split, 'cubes', cube_name))
+    
+    # Check if cube already exists
+    if search_cube:
+        # Load cube 
+        cube = xr.open_dataset(search_cube[0])
+    else:
+        # Generate cube given specs and specs_add_band
+        emc = Minicuber(specs)
+        cube = emc.load_minicube(config.specs, compute = True)
+        print('Downloaded data')
+        cube = get_additional_bands(config.specs_add_bands, cube)
+        print('Added local data')
     
     # Cloud cleaning
     if cloud_cleaning:
-        cube = smooth_s2_timeseries(cube, cloud_cleaning)
+        cube = smooth_s2_timeseries(cube, config.cloud_cleaning)
         print('Performed cloud cleaning')
         
+    # Deal with NaNs (or -9999)
+    # For era5 linear interpolation
+    cube_tmp = cube[[name for name in list(cube.variables) if name.startswith('era5')]]
+    if np.isnan(cube_tmp.to_array()).any():
+        cube[[name for name in list(cube.variables) if name.startswith('era5')]] = cube[[name for name in list(cube.variables) if name.startswith('era5')]].interpolate_na(dim='time', method='linear')
+    # For static layers to average in space
+    variables_to_fill = [name for name in list(cube.variables) if not name.startswith('era5') and not name.startswith('s2') and name not in ['time', 'lat', 'lon']]
+    cube_tmp = cube[variables_to_fill]
+    cube_tmp = cube_tmp.where(cube_tmp != -9999, np.nan)
+    if np.isnan(cube_tmp.to_array()).any():
+        mean = cube_tmp[variables_to_fill].mean()
+        cube[variables_to_fill] = cube[variables_to_fill].fillna(mean)
+    print('Dealed with misisng values')
+    
+        
+    # Save cube 
+    save_cube(cube, cube_name, config.split, config.root_dir, config.specs["lon_lat"])
+        
     # Split to context/target pairs and save
-    obtain_context_target_pixels(cube, context, target, split, root_dir, specs, shift)
+    obtain_context_target_pixels(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.shift)
     print(f"Created {split} samples from cube!")
     
     # Compute normalisation stats (min, max) if normalisation=True (usually for train split)
-
-    if normalisation and split=='train':
-        save_min_max(cube, split, root_dir, specs)
+    if config.normalisation and config.split=='train':
+        save_min_max(cube, config.split, config.root_dir, config.specs)
         print('Computed normalisation statistics')
         
     return 
 
 
 
-def obtain_context_target_pixels(cube, context, target, split, root_dir, specs, shift=0):
+def obtain_context_target_pixels(cube, context, target, split, root_dir, specs, bands_to_drop, shift=0):
     """
     Split into context target pairs given whole time interval of the cube
     
@@ -209,6 +255,8 @@ def obtain_context_target_pixels(cube, context, target, split, root_dir, specs, 
     :param root_dir: str, root directory where data will be saved and folders created
     :param specs: minicuber specifications
     :param shift: int, number of itmeframes of shift between ERA5 and S2. The final dates in the xarray will be the non-shifted ones
+    :param bands_to_drop: variables to remove when saving pixel timeseries
+    
     """
     n_frames = len(cube.time)
     lon = specs["lon_lat"][0]
@@ -249,12 +297,12 @@ def obtain_context_target_pixels(cube, context, target, split, root_dir, specs, 
             sub_target = cube.isel(time=slice(start_t+pair+context, end_t+pair))
         
         # Extract pixels at lat lons here and save context+target together
-        extract_pixel_timeseries(sub_context, sub_target, shift, split, root_dir)
+        extract_pixel_timeseries(sub_context, sub_target, shift, split, root_dir, bands_to_drop)
 
     return 
 
 
-def extract_pixel_timeseries(cube_context, cube_target, shift, split, root_dir):
+def extract_pixel_timeseries(cube_context, cube_target, shift, split, root_dir, bands_to_drop):
     """
     From a datacube, will extract individual pixel timeseries based on forest mask and to_sample variable.
     Then save them as .npz files.
@@ -264,6 +312,7 @@ def extract_pixel_timeseries(cube_context, cube_target, shift, split, root_dir):
     :param shift: int, number of itmeframes of shift between ERA5 and S2. The final dates in the xarray will be the non-shifted ones
     :param split: str, train/test/val or other name of split
     :param root_dir: str, root directory where data will be saved and folders created
+    :param bands_to_drop: variables to remove when saving pixel timeseries
     """
     # TO DO: set to_sample = 1 everywhere if cloud cleaning is not performed
     start_yr = cube_context.time.to_index().date[0].year
@@ -280,6 +329,6 @@ def extract_pixel_timeseries(cube_context, cube_target, shift, split, root_dir):
         for i_lon, lon in enumerate(cube_context.lon):
             if cube_context.sel(lat=lat, lon=lon).to_sample.values: # and cube_context.sel(lat=lat, lon=lon).FOREST_MASK.values:
                 pixel_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon.values}_{lat.values}_{width}_{height}_{shift}.npz'
-                save_context_target(cube_context.sel(lat=lat, lon=lon), cube_target.sel(lat=lat, lon=lon), pixel_name, split, root_dir)
+                save_context_target(cube_context.sel(lat=lat, lon=lon).drop_vars(bands_to_drop), cube_target.sel(lat=lat, lon=lon).drop_vars(bands_to_drop), pixel_name, split, root_dir)
 
     

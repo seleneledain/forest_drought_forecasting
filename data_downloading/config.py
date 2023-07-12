@@ -4,7 +4,7 @@ specs = {
     "lon_lat": (6.73570, 46.93912), # center pixel Creux du Van
     "xy_shape": (30, 30), # width, height of cutout around center pixel
     "resolution": 20, # in meters.. will use this on a local UTM grid..
-    "time_interval": "2018-08-01/2018-09-30",
+    "time_interval": "2020-08-01/2021-12-31",
     "providers": [
         {
             "name": "s2",
@@ -23,10 +23,12 @@ specs_add_bands = {
     "static_dir": '/Users/led/Desktop/Master_Thesis/Data/original_data/soil_maps/' # Path_to_local_data
 }
 
+band_to_drop = ["s2_mask", "s2_avail", "s2_SCL", "to_sample", "FOREST_MASK"]
+
 root_dir = ''
 split = 'train'
-context = 1
-target = 1
-shift=2
+context = 3
+target = 2
+shift=1
 cloud_cleaning= 15 #max_count for cloud_cleaning
 normalisation=False
