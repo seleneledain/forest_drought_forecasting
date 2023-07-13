@@ -55,12 +55,12 @@ def sample_drought(forest_mask_256, drought_labels_256, thresh_drought, thresh_f
                 # Calculate the center coordinates of the pixel
                 x = ulx + (col + 0.5) * pixel_width
                 y = uly + (row + 0.5) * pixel_height
-                output_file.write("{}, {}\n".format(x, y))
+                output_file.write("({}, {})\n".format(x, y))
                 
-
-    lines = output_file.readlines()
+    with open(output_file_path, 'r') as f:
+        lines = f.readlines()
     num_lines = len(lines)
-    if num_lines < N:
+    if num_lines > N:
         # Randomly select N lines from the file
         random_lines = random.sample(lines, N)
         # Write the randomly selected lines to a new file
