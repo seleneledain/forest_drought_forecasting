@@ -5,6 +5,10 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
 
 ```.
 ├── README.md                               > This file contains a description of what is the repository used for and how to use it.
+├── sampling                                > Forlder for scripts concerning scene sampling in Switzerland.
+    ├── rasterise.py                        > Rasterise, upsample and normalise shapefiles to use as masks in sampling.
+    ├── sample.py                           > Sampling algorithms.
+    ├── sampling.ipynb                      > Example notebook.
 ├── data_downloading                        > Folder for scripts concering downloading of data.
     ├── swiss_dem_download.py               > Download DEM tiles from swisstopo
     ├── reproject_dem.py                    > Reproject the DEM tiles to CRS EPSG:4326
@@ -28,7 +32,40 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     
 
 ```
-    
+## 0. Scene Sampling
+
+The first step is to identify locations around Switzerland. In particular, we collect the center coordinates of scenes of 2.56km x 2.56 km that will then be called during Data Downloading.
+The approach here uses a shapefile of the forests in Switzerland, as well as some polygons that label droughts (obtained from Brun et al., 2020. https://doi.org/10.1111/gcb.15360). We want to ensure that we sample scenes containing drought events, as well as scenes across all the country.
+
+**How to sample coordinates**
+1. Rasterise your shapefiles, reproject, and upsample to a 2.56km resolution where each pixel is a continuous value between 0-1 (e.g. proportion of forest contained in each pixel). Use `rasterise.py` and refer to `sampling.ipynb`.
+2. Sample scenes with containing drought labels
+```
+from sampling.sample import *
+
+forest_mask_256 = ... # Path to forest mask with 2.56km resolution
+drought_labels_256 = ... # Path to drought mask with 2.56km resolution
+thresh_drought = 0 # Sample scenes with > thresh_drought
+thresh_forest = 0.4  # Sample scenes with > thresh_forest
+output_file_path = 'coords_drought.txt' # Define the output text file path
+N = 100 # Number of scenes to sample. Will randomly keep N scenes
+
+sample_drought(forest_mask_256, drought_labels_256, thresh_drought, thresh_forest, output_file_path, N)
+```
+
+3. Sample scenes that have NO positive drought labels. Split Switzerland in 6 subregions. For each subregion, get randomly N/6 scenes in each subregions.
+```
+from sampling.sample import *
+
+forest_mask_256 = ... # Path to forest mask with 2.56km resolution
+drought_labels_256 = ... # Path to drought mask with 2.56km resolution
+thresh_forest = 0.4  # Sample scenes with > thresh_forest
+output_file_path = 'coords_negative_drought.txt' # Define the output text file path
+N = 100 # Number of scenes to sample
+
+sample_negatives(forest_mask_256, drought_labels_256, thresh_forest, output_file, N)
+```
+
 ## 1. Data Downloading 
 
 ### 1.1 Create datasets from minicubes
