@@ -9,7 +9,7 @@ from osgeo import gdal
 import random
 import numpy as np
 
-def sample_drought(forest_mask_256, drought_labels_256, thresh_drought, thresh_forest, output_file_path):
+def sample_drought(forest_mask_256, drought_labels_256, thresh_drought, thresh_forest, output_file_path, N):
     """
     Get center coordinates of scenes of 2.56km where % drought > drought_thresh and % forest > thresh_forest
     
@@ -18,6 +18,7 @@ def sample_drought(forest_mask_256, drought_labels_256, thresh_drought, thresh_f
     :param thresh_drought: threshold for drought 
     :param thresh_forest: threshold for forest 
     :param output_file_path: where output text file should be written
+    :param N: number of scenes to sample
     """
     # Open the input raster
     forest_dataset = gdal.Open(forest_mask_256)
@@ -55,6 +56,18 @@ def sample_drought(forest_mask_256, drought_labels_256, thresh_drought, thresh_f
                 x = ulx + (col + 0.5) * pixel_width
                 y = uly + (row + 0.5) * pixel_height
                 output_file.write("{}, {}\n".format(x, y))
+                
+
+    lines = output_file.readlines()
+    num_lines = len(lines)
+    if num_lines < N:
+        # Randomly select N lines from the file
+        random_lines = random.sample(lines, N)
+        # Write the randomly selected lines to a new file
+        with open(output_file, 'w') as f:
+            f.writelines(random_lines)
+    else:
+        ('There are less than N samples')
 
     # Close the output file
     output_file.close()
@@ -84,7 +97,7 @@ def get_coords_forest_drought_neg(forest_array, drought_array, thresh, ulx, uly,
     return coord_list
 
 
-def sample_negatives(forest_mask_256, drought_labels_256, thresh_forest, N, output_file):
+def sample_negatives(forest_mask_256, drought_labels_256, thresh_forest, output_file, N):
     """
     Get center coordinates of scenes of 2.56km where no drought and % forest > thresh_forest
     
