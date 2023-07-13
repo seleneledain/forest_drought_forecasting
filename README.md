@@ -38,7 +38,7 @@ The first step is to identify locations around Switzerland. In particular, we co
 The approach here uses a shapefile of the forests in Switzerland, as well as some polygons that label droughts (obtained from Brun et al., 2020. https://doi.org/10.1111/gcb.15360). We want to ensure that we sample scenes containing drought events, as well as scenes across all the country.
 
 **How to sample coordinates**
-1. Rasterise your shapefiles, reproject, and upsample to a 2.56km resolution where each pixel is a continuous value between 0-1 (e.g. proportion of forest contained in each pixel). Use `rasterise.py` and refer to `sampling.ipynb`.
+1. Rasterise your shapefiles, reproject, and upsample to a 2.56km resolution where each pixel is a continuous value between 0-1 (e.g. proportion of forest contained in each pixel). Use `sampling/rasterise.py` and refer to `sampling/sampling.ipynb`.
 2. Sample scenes with containing drought labels
 ```
 from sampling.sample import *
