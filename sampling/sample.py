@@ -55,7 +55,7 @@ def sample_drought(forest_mask_256, drought_labels_256, thresh_drought, thresh_f
                 # Calculate the center coordinates of the pixel
                 x = ulx + (col + 0.5) * pixel_width
                 y = uly + (row + 0.5) * pixel_height
-                output_file.write("({}, {})\n".format(x, y))
+                output_file.write("{}, {}\n".format(x, y))
                 
     with open(output_file_path, 'r') as f:
         lines = f.readlines()
@@ -156,8 +156,11 @@ def sample_negatives(forest_mask_256, drought_labels_256, thresh_forest, output_
                 # Iterate over each element in the list
                 for item in coord_list:
                     # Write the element to a new line in the file
-                    file.write(str(item) + '\n')
+                    file.write("{}, {}\n".format(item[0], item[1]))
 
 
     # Close the raster dataset
     dataset = None
+    
+    # Close the output file
+    file.close()
