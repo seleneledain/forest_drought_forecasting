@@ -29,6 +29,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── add_bands.py                        > Add additional features to the data cube (either computed or using add_static_data.py)
     ├── feature_list.txt                    > List of locally stored features and their description.
 
+
     
 
 ```
@@ -66,7 +67,9 @@ N = 100 # Number of scenes to sample
 sample_negatives(forest_mask_256, drought_labels_256, thresh_forest, output_file, N)
 ```
 
-## 1. Data Downloading 
+## 1. Data Downloading and Dataset creation
+
+Make sure that you have gone through step 2. Feature Engineering and that your local feature are ready to be added to the dataset!
 
 ### 1.1 Create datasets from minicubes
 
