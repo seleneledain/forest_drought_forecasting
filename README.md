@@ -28,11 +28,9 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── add_static_data.py                  > Add time-invariant layers to the data cubes.
     ├── add_bands.py                        > Add additional features to the data cube (either computed or using add_static_data.py)
     ├── feature_list.txt                    > List of locally stored features and their description.
-
-
-    
-
 ```
+
+
 ## 0. Scene Sampling
 
 The first step is to identify locations around Switzerland. In particular, we collect the center coordinates of scenes of 2.56km x 2.56 km that will then be called during Data Downloading.
