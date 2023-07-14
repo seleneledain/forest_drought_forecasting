@@ -25,8 +25,8 @@ class DroughtDataset(Dataset):
         assert (not {"target","context"}.issubset(set([d.name for d in folder.glob("*") if d.is_dir()])))
 
         self.filepaths = sorted(list(folder.glob("**/*.npz")))
-        self.min_vals = sorted(list(folder.glob("**/*_min.npz")))
-        self.max_vals = sorted(list(folder.glob("**/*_max.npz")))
+        self.min_vals = sorted(list(folder.glob("**/*_min.npy")))
+        self.max_vals = sorted(list(folder.glob("**/*_max.npy")))
         # Exclude min and max files from self.filepaths
         self.filepaths = [file for file in self.filepaths if file not in self.min_vals and file not in self.max_vals]
 
