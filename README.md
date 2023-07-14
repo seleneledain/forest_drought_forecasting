@@ -75,6 +75,7 @@ To this cube, custom/local data can be added. Cloud removal on Sentinel-2 data c
 
 **Setup**\
 The format of the data that will be downloaded and the samples that will be created are set up in the `data_downloading/config.py`. The parameters to modify are:
+- `coord_list_paths`: list of paths to text files from which to read coordinates (generated duirng sampling).
 - `specs`: Specifications passed to earthnet-minicuber, defining region, time and bands of interest. For more details of the possible cube specifications, check the `earthnet-minicuber` code. 
 - `specs_add_bands`:  Specifications for adding locally stored data (including forest mask). The data will be added in the same resolution, projection and within the same bounds as the existing data in the minicube. There are two types of features that can be added to the minicube.
     - temporal: bands computed using the raw data in the cube, among ['NDVI']
@@ -103,8 +104,16 @@ from earthnet_minicuber.minicuber import *
 from data_downloading.create_dataset import *
 import data_downloading.config as config
 
-generate_samples(specs=config.specs, specs_add_bands=config.specs_add_bands, context=config.context, target=config.target, split=config.split, 
-                                root_dir=config.root_dir, shift=config.shift, cloud_cleaning=config.cloud_cleaning, normalisation=config.normalisation)
+for path in config.coord_list_paths:
+    # Open text file and read coordinates one by one
+    with open(path) as f:
+        lines = f.readlines()
+        for coord in lines:
+            print(f"Downloading cube and generating samples at {coord}")
+            # Change the coordinate in config.specs
+            config.specs["lon_lat"] = (float(coord.split(',')[0]), float(coord.split(',')[1]))
+            # Generate sample for that coordinate
+            generate_samples(config)
 ```
 
 ### 1.2 Digital Elevation Model (DEM)
