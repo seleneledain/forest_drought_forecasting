@@ -243,6 +243,7 @@ def generate_samples(config):
     # Split to context/target pairs and save
     obtain_context_target_pixels(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.shift)
     print(f"Created {config.split} samples from cube!")
+
     
         
     return
@@ -332,7 +333,7 @@ def extract_pixel_timeseries(cube_context, cube_target, shift, split, root_dir, 
     # Get all the pixels that satisfy condition (forest mask + valid after cloud cleaning)
     for i_lat, lat in enumerate(cube_context.lat):
         for i_lon, lon in enumerate(cube_context.lon):
-            if cube_context.sel(lat=lat, lon=lon).to_sample.values: # and cube_context.sel(lat=lat, lon=lon).FOREST_MASK.values:
+            if cube_context.sel(lat=lat, lon=lon).to_sample.values and cube_context.sel(lat=lat, lon=lon).FOREST_MASK.values:
                 pixel_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon.values}_{lat.values}_{width}_{height}_{shift}.npz'
                 save_context_target(cube_context.sel(lat=lat, lon=lon).drop_vars(bands_to_drop), cube_target.sel(lat=lat, lon=lon).drop_vars(bands_to_drop), pixel_name, split, root_dir)
 

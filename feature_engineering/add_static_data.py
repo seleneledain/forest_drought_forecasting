@@ -208,7 +208,7 @@ dict_static_features = {
     "FED60_100": "trd-feinerde-final-60_100-rf.tif", 
     "FC": "Waldmischungsgrad_2018_10m_2056.tif", 
     "FH": "Vegetationshoehenmodell_2021_10m_LFI_ID164_19_LV95.tif", 
-    "FOREST_MASK" : "ForestMask_hull_LV95_20171127.shp",
+    "FOREST_MASK" : "forest_mask_reproj.tif",
     "GRAV0_5": "skelettgehalt-0_5-rf.tif",  
     "GRAV100_200": "skelettgehalt-100_200-rf.tif",  
     "GRAV15_30": "skelettgehalt-15_30-rf.tif",  

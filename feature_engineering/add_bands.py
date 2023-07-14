@@ -96,7 +96,7 @@ def get_additional_bands(specs_add_bands, cube):
     :param specs_add_bands: dictionary with list of bands to add, storage location of local bands.
     """
     
-    to_add = specs_add_bands["bands"]
+    to_add = specs_add_bands["bands"][:]
     if 'NDVI' in to_add:
         to_add.remove('NDVI')
         cube = compute_ndvi(cube)
@@ -105,10 +105,12 @@ def get_additional_bands(specs_add_bands, cube):
         to_add.remove('NDWI')
         cube = compute_ndwi(cube)
         cube["s2_ndwi"].attrs = get_attrs_for_band('NDWI', 'Sentinel 2')
+    """
     if 'FOREST_MASK' in to_add:
         to_add.remove('FOREST_MASK')
         cube = add_mask_to_minicube(specs_add_bands["static_dir"], cube)
         cube["FOREST_MASK"].attrs = get_attrs_for_band('FOREST_MASK', 'Local data')
+    """
     if len(to_add):
         cube = add_static_to_minicube(to_add, specs_add_bands["static_dir"], cube)
         
