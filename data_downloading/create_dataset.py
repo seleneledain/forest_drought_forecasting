@@ -46,10 +46,10 @@ def save_cube(cube, split, root_dir, lon_lat):
     end_day = cube.time.to_index().date[-1].day
     width = len(cube.lon) 
     height = len(cube.lat)
-    cube_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon_lat[0]}_{lon_lat[1]}_{width}_{height}.npz'
+    cube_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon_lat[0]}_{lon_lat[1]}_{width}_{height}.nc'
 
-    numpy_array = cube.to_array().values
-    np.savez(os.path.join(path_to_save,cube_name), data=numpy_array)
+    #numpy_array = cube.to_array().values
+    cube.to_netcdf(os.path.join(path_to_save,cube_name))
 
     
 def save_context_target(cube_context, cube_target, file_name, split, root_dir):
@@ -187,60 +187,65 @@ def generate_samples(config):
     
     start_yr = config.specs["time_interval"].split("-")[0]
     start_month = config.specs["time_interval"].split("-")[1]
+    start_month = start_month[1:] if start_month.startswith('0') else start_month
     end_yr = config.specs["time_interval"].split("-")[2].split("/")[1]
     end_month = config.specs["time_interval"].split("-")[3]
+    end_month = end_month[1:] if end_month.startswith('0') else end_month
     lon = config.specs["lon_lat"][0]
     lat = config.specs["lon_lat"][1]
     width = config.specs["xy_shape"][0]
     height = config.specs["xy_shape"][1]
-    cube_name = f'{start_yr}_{start_month}*{end_yr}_{end_month}*{lon}_{lat}_{width}_{height}.npz'
+    cube_name = f'{start_yr}_{start_month}*{end_yr}_{end_month}*{lon}_{lat}_{width}_{height}.nc'
     search_cube = glob.glob(os.path.join(config.root_dir, config.split, 'cubes', cube_name))
-    
+
     # Check if cube already exists
     if search_cube:
         # Load cube 
-        cube = xr.open_dataset(search_cube[0])
+        cube = xr.open_dataset(os.path.join(config.root_dir,search_cube[0]), engine='netcdf4')        
     else:
         # Generate cube given specs and specs_add_band
-        emc = Minicuber(specs)
+        emc = Minicuber(config.specs)
         cube = emc.load_minicube(config.specs, compute = True)
         print('Downloaded data')
         cube = get_additional_bands(config.specs_add_bands, cube)
         print('Added local data')
+        
+        # Cloud cleaning
+        if config.cloud_cleaning:
+            cube = smooth_s2_timeseries(cube, config.cloud_cleaning)
+            print('Performed cloud cleaning')
+
+        # Deal with NaNs (or -9999)
+        # For era5 linear interpolation
+        cube_tmp = cube[[name for name in list(cube.variables) if name.startswith('era5')]]
+        if np.isnan(cube_tmp.to_array()).any():
+            cube[[name for name in list(cube.variables) if name.startswith('era5')]] = cube[[name for name in list(cube.variables) if name.startswith('era5')]].interpolate_na(dim='time', method='linear')
+        # For static layers to average in space
+        variables_to_fill = [name for name in list(cube.variables) if not name.startswith('era5') and not name.startswith('s2') and name not in ['time', 'lat', 'lon', 'to_sample']]
+        cube_tmp = cube[variables_to_fill]
+        cube_tmp = cube_tmp.where(cube_tmp != -9999, np.nan)
+        if np.isnan(cube_tmp.to_array()).any():
+            mean = cube_tmp[variables_to_fill].mean().to_array().values
+            for i, v in enumerate(variables_to_fill):
+                cube[v].fillna(mean[i])
+        print('Dealed with missing values')
+        
+        # Save cube 
+        save_cube(cube, config.split, config.root_dir, config.specs["lon_lat"])
+        
+        # Compute normalisation stats (min, max) if normalisation=True (usually for train split)
+        if config.normalisation and 'train' in config.split:
+            save_min_max(cube.drop_vars(config.bands_to_drop), config.split, config.root_dir, config.specs)
+            print('Computed normalisation statistics')
+            
+        
     
-    # Cloud cleaning
-    if cloud_cleaning:
-        cube = smooth_s2_timeseries(cube, config.cloud_cleaning)
-        print('Performed cloud cleaning')
-        
-    # Deal with NaNs (or -9999)
-    # For era5 linear interpolation
-    cube_tmp = cube[[name for name in list(cube.variables) if name.startswith('era5')]]
-    if np.isnan(cube_tmp.to_array()).any():
-        cube[[name for name in list(cube.variables) if name.startswith('era5')]] = cube[[name for name in list(cube.variables) if name.startswith('era5')]].interpolate_na(dim='time', method='linear')
-    # For static layers to average in space
-    variables_to_fill = [name for name in list(cube.variables) if not name.startswith('era5') and not name.startswith('s2') and name not in ['time', 'lat', 'lon']]
-    cube_tmp = cube[variables_to_fill]
-    cube_tmp = cube_tmp.where(cube_tmp != -9999, np.nan)
-    if np.isnan(cube_tmp.to_array()).any():
-        mean = cube_tmp[variables_to_fill].mean()
-        cube[variables_to_fill] = cube[variables_to_fill].fillna(mean)
-    print('Dealed with misisng values')
-    
-        
-    # Save cube 
-    save_cube(cube, cube_name, config.split, config.root_dir, config.specs["lon_lat"])
-        
     # Split to context/target pairs and save
     obtain_context_target_pixels(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.shift)
-    print(f"Created {split} samples from cube!")
+    print(f"Created {config.split} samples from cube!")
     
-    # Compute normalisation stats (min, max) if normalisation=True (usually for train split)
-    if config.normalisation and config.split=='train':
-        save_min_max(cube.drop_vars(config.bands_to_drop), config.split, config.root_dir, config.specs)
-        print('Computed normalisation statistics')
         
-    return 
+    return
 
 
 

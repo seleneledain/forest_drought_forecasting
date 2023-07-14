@@ -8,11 +8,11 @@ Date: June 23rd, 2023
 import numpy as np
 import xarray as xr
 
-def check_if_interp(data_array, max_nan):
+def check_if_interp(data, max_nan):
     """
     For each pixel timeseries of NDVI, will check if there are sufficient values to allow timeseries smoothing (not too many NaN).
     
-    :param data_array: xarray with data that needs to be smoothed
+    :param data: xarray dataset with data that needs to be smoothed
     :param max_nan: maximum number of consecutive NaNs allowed. If more, the pixel will not be used/sampled
     """
     
@@ -20,7 +20,7 @@ def check_if_interp(data_array, max_nan):
     #if variable_name.startswith('s2'):
 
     # Select the variable (now just NDVI)
-    variable = data_array['s2_ndvi']
+    variable = data['s2_ndvi']
 
     # Initialise a new variable to store the data check
     new_variable = xr.DataArray(np.zeros((len(variable.lat), len(variable.lon))),
@@ -28,7 +28,7 @@ def check_if_interp(data_array, max_nan):
                                 coords={'lat': variable.lat, 'lon': variable.lon})
 
     # Add the new variable to the dataset
-    data_array['to_sample'] = new_variable
+    data['to_sample'] = new_variable
 
     # Loop along the pixel dimensions (lat, lon)
     for i_lat, lat in enumerate(variable.lat):
@@ -39,39 +39,38 @@ def check_if_interp(data_array, max_nan):
 
             # If all nan to skip and add indictator
             if subset.isnull().all():
-                data_array['to_sample'].loc[dict(lat=lat, lon=lon)] = False
+                data['to_sample'].loc[dict(lat=lat, lon=lon)] = False
 
             # Compute max number of consecutive
             max_count, max_index = find_max_consec_nan(subset.isnull().values)
             #print(f'{max_count} consecutive missing timestamps - i.e. {max_count*5} missing days\nMissing from {str(filtered_ds_10.time.isel(time=max_index).values)} to {str(filtered_ds_10.time.isel(time=max_index+max_count-1).values)}')
 
             if max_count > max_nan:
-                data_array['to_sample'].loc[dict(lat=lat, lon=lon)] = False
+                data['to_sample'].loc[dict(lat=lat, lon=lon)] = False
             else:
-                data_array['to_sample'].loc[dict(lat=lat, lon=lon)] = True
+                data['to_sample'].loc[dict(lat=lat, lon=lon)] = True
                 
-    return data_array
+    return data
 
 def find_max_consec_nan(timeseries):
     """
-    Returns maximum consecutive nans in a mask. Will also return the start index of these nans.
+    Returns maximum consecutive NaNs in a mask. Will also return the start index of these NaNs.
     """
     max_index = 0
-    max_count = 1
-    max_num = timeseries[0]
-    count = 1
+    max_count = 0  # Initialize max_count to 0 for counting NaNs
+    count = 0  # Initialize count to 0 for counting NaNs
     for i, x in enumerate(timeseries):
-        if i < len(timeseries)-1:
-            next_t = timeseries[i+1]
-            if x != next_t:
-                if count > max_count:
-                    max_count = count
-                    max_num = x
-                count = 1
-                max_index = i + 1
-            else:
-                count += 1
-    return count, max_index
+        if x:  # Check if the value is True (indicating NaN)
+            count += 1
+        else:
+            if count > max_count:
+                max_count = count
+                max_index = i - count  # Update max_index to the start index of consecutive NaNs
+            count = 0  # Reset count when a non-NaN value is encountered
+    if count > max_count:  # Check if the maximum count occurs at the end of the series
+        max_count = count
+        max_index = len(timeseries) - count
+    return max_count, max_index
 
 
 
