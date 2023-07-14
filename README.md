@@ -101,8 +101,9 @@ sys.path.insert(0, 'Path_to_code/earthnet-minicuber/')
 # Import the module
 from earthnet_minicuber.minicuber import *
 ```
-3. Edit `data_downloading/config.py`
-4. Launch the dataset creation
+3. Also edit the dictionaries in `feature_engineering/add_bands.py` and `feature_engineering/add_static_data.py` to include all of you filenames and path to local features you may have.
+4. Edit `data_downloading/config.py`
+5. Launch the dataset creation
 ```
 from data_downloading.create_dataset import *
 import data_downloading.config as config
