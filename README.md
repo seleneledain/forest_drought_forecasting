@@ -88,6 +88,7 @@ The format of the data that will be downloaded and the samples that will be crea
 - `shift`: Shift between Sentinel-2 and ERA5. ERA5 will be shifted n steps forward with respect to Sentinel-2, but the timestamps used for naming files are those of Sentinel-2.
 - `cloud_cleaning`: maximum number of consecutive missing values (in NDVI timeseries) for which cloud cleaning will be performed. If > cloud_cleaning, the pixel wil not be used as a data sample. If 0/None no cloud cleaning is done.
 - `normalisation`: If True, compute min/max for each band in the training set
+- `target_in_summer`: If True, data samples will be created only if the start date of the target (label) is contained in Jun. 1st- Sep. 1st. Relevant for val/test set.
 
 **How to create dataset**
 1. Download the required code to generate minicubes: https://github.com/geco-bern/earthnet-minicuber
