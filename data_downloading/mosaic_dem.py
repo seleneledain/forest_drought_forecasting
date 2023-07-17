@@ -6,7 +6,7 @@ from rasterio.merge import merge
 folder_path = "swiss_dem/downloads/" # TO UPDATE with path to reprojected tiles
 
 # Get a list of all raster files in the folder
-files = [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith(".tif")]
+files = [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith(".tiff")]
 
 
 # Open all raster files and store them in a list

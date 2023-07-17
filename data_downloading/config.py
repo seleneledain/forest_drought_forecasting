@@ -1,12 +1,12 @@
 # Configuration file for minicube generation
 
-coord_list_paths = ['/Users/led/Desktop/sampling_rasters/coords_sample_negative.txt'] #'/Users/led/Desktop/sampling_rasters/coords_drought.txt', 
+coord_list_paths = ['/Users/led/Desktop/sampling_rasters/coords_sample_negative.txt', '/Users/led/Desktop/sampling_rasters/coords_drought.txt'] 
 
 specs = {
     "lon_lat": None, #(6.73570, 46.93912), # center pixel Creux du Van
-    "xy_shape": (30, 30), # width, height of cutout around center pixel
+    "xy_shape": (128, 128), # width, height of cutout around center pixel
     "resolution": 20, # in meters.. will use this on a local UTM grid..
-    "time_interval": "2020-01-01/2020-06-30",
+    "time_interval": "2020-08-01/2022-12-31",
     "providers": [
         {
             "name": "s2",
@@ -21,16 +21,17 @@ specs = {
 
 
 specs_add_bands = {
-    "bands": ['SAND0_5', 'FED100_200', 'NDVI'],
+    "bands": ['SAND0_5', 'FED100_200', 'NDVI', "FOREST_MASK", "DEM"],
     "static_dir": '/Users/led/Desktop/Master_Thesis/Data/original_data/soil_maps/' # Path_to_local_data
 }
 
-bands_to_drop = ["s2_mask", "s2_avail", "s2_SCL", "to_sample"] #"FOREST_MASK"
+bands_to_drop = ["s2_mask", "s2_avail", "s2_SCL", "to_sample", "FOREST_MASK"]
 
 root_dir = '/Users/led/Desktop/New code/'
-split = 'train_new'
-context = 1
-target = 1
-shift=1
-cloud_cleaning= 5 #max_count for cloud_cleaning
-normalisation=True
+split = 'train_full'
+context = 54 # 9 months 5-daily 
+target =  18 # 3 months 5-daily
+shift = 18
+cloud_cleaning = 18 # max_count for cloud_cleaning
+normalisation = True
+target_in_summer = True
