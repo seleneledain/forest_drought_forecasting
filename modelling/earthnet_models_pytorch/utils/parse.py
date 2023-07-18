@@ -7,6 +7,9 @@ parse setting implements copying of global attributes to the particular subcateg
 from pathlib import Path
 import yaml
 import warnings
+
+import sys
+sys.path.insert(0, '/Users/led/Documents/forest_drought_forecasting/modelling/')
 from earthnet_models_pytorch.setting import SETTINGS, METRIC_CHECKPOINT_INFO
 from earthnet_models_pytorch.model import MODELS, MODELTASKNAMES
 from earthnet_models_pytorch.task import TRACK_INFO
