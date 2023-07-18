@@ -23,7 +23,7 @@ def parse_setting(setting_file, track = None):
         if "grid" == setting_file.parts[-2]:
             setting, architecture, feature, _, config = setting_file.parts[-5:]  
         else:
-            setting, architecture, feature, config = setting_file.parts[-4:]  # example: setting: en21x, architecture: local-rnn, feature: arch, config: base.yaml
+            architecture, setting, feature, config = setting_file.parts[-4:]  # example: setting: drought, architecture: drought_lstm, feature: arch, config: base.yaml
         config = "config_"+config[:-5] if config != "base.yaml" else "full_train"
         if setting not in SETTINGS: 
             setting = None
