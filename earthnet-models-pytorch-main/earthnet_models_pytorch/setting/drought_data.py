@@ -24,11 +24,15 @@ class DroughtDataset(Dataset):
             folder = Path(folder)
         assert (not {"target","context"}.issubset(set([d.name for d in folder.glob("*") if d.is_dir()])))
 
-        self.filepaths = sorted(list(folder.glob("**/*.npz")))
-        self.min_vals = sorted(list(folder.glob("**/*_min.npy")))
-        self.max_vals = sorted(list(folder.glob("**/*_max.npy")))
+        self.filepaths = sorted(list(folder.glob("*.npz")))
+        self.min_vals = list(folder.glob("*_min.npy"))
+        self.max_vals = list(folder.glob("*_max.npy"))
         # Exclude min and max files from self.filepaths
         self.filepaths = [file for file in self.filepaths if file not in self.min_vals and file not in self.max_vals]
+
+        # Compute global min/max for training set
+        self.min_stats = np.min([np.load(i) for i in self.min_vals], axis=0) if self.min_vals else None
+        self.max_stats = np.max([np.load(i) for i in self.max_vals], axis=0) if self.max_vals else None
 
         self.type = np.float32
 
@@ -40,19 +44,19 @@ class DroughtDataset(Dataset):
 
         context = npz["context"].reshape((npz["context"].shape[1],npz["context"].shape[0], 1, 1)) # seq_len, input_size/num features, height, width
         target =  npz["target"].reshape((npz["target"].shape[1],npz["target"].shape[0], 1, 1))
+        if self.min_stats is None or self.max_stats is None:
+            self.min_stats = np.ones((context.shape[1],))
+            self.max_stats = np.zeros((context.shape[1],))
+            min_stats = self.min_stats[np.newaxis, :, np.newaxis, np.newaxis]
+            max_stats = self.max_stats[np.newaxis, :, np.newaxis, np.newaxis]
+            self.min_stats, self.max_stats = None, None
+        else:
+            min_stats = self.min_stats[np.newaxis, :, np.newaxis, np.newaxis]
+            max_stats = self.max_stats[np.newaxis, :, np.newaxis, np.newaxis]
 
-        # Load all files in train with _min/max.npy 
-        minv = np.load(self.min_vals[idx])
-        maxv = np.load(self.max_vals[idx])
-        # Broadcast minv to match the shape of cube
-        minv_broadcasted_c = np.broadcast_to(minv[:, np.newaxis, np.newaxis, np.newaxis], context.to_array().shape)
-        maxv_broadcasted_c = np.broadcast_to(maxv[:, np.newaxis, np.newaxis, np.newaxis], context.to_array().shape)
-        minv_broadcasted_t = np.broadcast_to(minv[:, np.newaxis, np.newaxis, np.newaxis], target.to_array().shape)
-        maxv_broadcasted_t = np.broadcast_to(maxv[:, np.newaxis, np.newaxis, np.newaxis], target.to_array().shape)
         # Normalise
-        context_normalized = (context.to_array() - minv_broadcasted_c)/(maxv_broadcasted_c-minv_broadcasted_c)
-        target_normalized = (target.to_array() - minv_broadcasted_t)/(maxv_broadcasted_t-minv_broadcasted_t)
-
+        context_normalized = (context - min_stats)/(max_stats-min_stats)
+        target_normalized = (target - min_stats)/(max_stats-min_stats)
 
         data = {
             "context": [
@@ -66,8 +70,6 @@ class DroughtDataset(Dataset):
         }
 
         npz.close()
-        minv.close()
-        maxv.close()
 
         return data
 
@@ -97,11 +99,7 @@ class DroughtDataset(Dataset):
 class DroughtDataModule(pl.LightningDataModule):
 
     __TRACKS__ = {
-        "iid": ("iid_test_split/context/","iid_test"),
-        "ood": ("ood_test_split/context/","ood_test"),
-        "ex": ("extreme_test_split/context/","extreme_test"),
-        "sea": ("seasonal_test_split/context/", "seasonal_test"),
-        "full_sea": ("seasonal_test_filtered", "seasonal_test")
+        "iid": ("test/iid/","iid_test")
     }
 
     def __init__(self, hparams: argparse.Namespace):

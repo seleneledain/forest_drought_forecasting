@@ -59,6 +59,7 @@ class RootMeanSquaredError(Metric):
         else:
             self.sum_squared_error += sum_squared_error.sum()
             self.total += n_obs
+            # Should I be returning something here?
 
     def compute(self):  
         """

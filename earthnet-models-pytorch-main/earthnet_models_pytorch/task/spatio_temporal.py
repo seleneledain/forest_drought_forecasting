@@ -90,7 +90,7 @@ class SpatioTemporalTask(pl.LightningModule):
 
         parser.add_argument('--setting', type = str, default = "en21-std")
 
-        #parser.add_argument('--compute_metric_on_test', type = str2bool, default = False)
+        parser.add_argument('--compute_metric_on_test', type = str2bool, default = False)
         return parser
 
     def forward(self, data, pred_start: int = 0, n_preds: Optional[int] = None, kwargs = {}):
@@ -100,7 +100,7 @@ class SpatioTemporalTask(pl.LightningModule):
         n_preds is the length of the prediction, could also be None.
         kwargs are optional keyword arguments parsed to the model, right now these are model shedulers.
         """    
-        x = data["context"][0]    
+        x = data["context"][0]   
         return self.model(x.float(), **kwargs)
 
     def configure_optimizers(self):
@@ -127,33 +127,30 @@ class SpatioTemporalTask(pl.LightningModule):
                     logs[f"{shedule_name}_i"] = shed_val
             else:
                 logs[shedule_name] = kwargs[shedule_name]
-        logs['batch_size'] = torch.tensor(self.hparams.train_batch_size, dtype=torch.float32)
-        #logs['loss'] = loss.clone().detach() #torch.tensor(loss, dtype=torch.float32) # already in logs normally
+        logs['batch_size_train'] = torch.tensor(self.hparams.train_batch_size, dtype=torch.float32)
+        logs['loss_train'] = loss.clone().detach() #torch.tensor(loss, dtype=torch.float32) # already in logs normally
         self.log_dict(logs)  
         
         return loss
 
     def validation_step(self, batch, batch_idx):
         '''Operates on a single batch of data from the validation set. In this step you d might generate examples or calculate anything of interest like accuracy.'''
-
-        #data = copy.deepcopy(batch)
-        #x = data["context"][0]
-
+        
         preds = self(batch) #self(x.float()) #, pred_start = self.context_length, n_preds = self.target_length)  # output model
         loss, logs = self.loss(preds, batch)
         metric = self.metric(preds, batch["target"][0][:, :, self.hparams["loss"]["ndvi_pred_idx"],...]) # Check that shapes are ok
-
         batch_size = torch.tensor(self.hparams.val_batch_size, dtype=torch.int64)#float32)
         logs['val_batch_size'] = torch.tensor(self.hparams.val_batch_size, dtype=torch.float32)
-        metric = 1
-        logs['RMSE_drought'] = torch.tensor(metric, dtype=torch.float32)
+        logs['loss_val'] = torch.tensor(loss.clone().detach(), dtype=torch.float32)
         self.log_dict(logs)
 
         
     def on_validation_epoch_end(self):
+
         current_scores = self.metric.compute()
-        self.log_dict(current_scores, sync_dist=True)
+        self.log_dict(current_scores, sync_dist=True) # is a dict with {"metric name": val}
         self.metric.reset()
+
         if self.logger is not None and type(self.logger.experiment).__name__ != "DummyExperiment" and self.trainer.is_global_zero:
             current_scores["epoch"] = self.current_epoch
             current_scores = {k: str(v.detach().cpu().item())  if isinstance(v, torch.Tensor) else str(v) for k,v in current_scores.items()}
@@ -170,135 +167,75 @@ class SpatioTemporalTask(pl.LightningModule):
 
 
     def test_step(self, batch, batch_idx):
-        '''Operates on a single batch of data from the test set. In this step you d normally generate examples or calculate anything of interest such as accuracy.'''
-        scores = []
+        '''Operates on a single batch of data from the test set. In this step you'd normally generate examples or calculate anything of interest such as accuracy.'''
+        scores = [] # For saving metric
+        preds = self(batch) # shape batch size, time len, feature
+        # Compute and log loss
+        loss, logs = self.loss(preds, batch)
+        self.log('loss_test', torch.tensor(loss, dtype=torch.float32).clone().detach(), batch_size=self.hparams.test_batch_size)
 
-        for i in range(self.n_stochastic_preds):
-            preds, aux = self(batch, pred_start = self.context_length, n_preds = self.target_length)
+        # Loop through batch of results
+        for j in range(preds.shape[0]):
+            targ_path = Path(batch["filepath"][j])
+            # Extract ndvi preds
+            ndvi_preds = preds[j].detach().cpu().numpy()
+            # Save predicitons
+            pred_dir = self.pred_dir
+            pred_path = pred_dir/targ_path.parent.stem/targ_path.name
+            pred_path.parent.mkdir(parents = True, exist_ok = True)
+            if not pred_path.is_file():
+                np.savez(pred_path, preds=ndvi_preds)
+            #scores.append((targ_path, self.metric(ndvi_preds, batch["target"][0][j, :, self.hparams["loss"]["ndvi_pred_idx"],...])))
+            scores.append((str(targ_path.name), 0.5)) # TOCHANGE
+        self.indiv_test_scores = scores
 
-            lc = batch["landcover"]
-            
-            static = batch["static"][0]
-
-            for j in range(preds.shape[0]):
-                if self.hparams.setting in ["en21x"]:
-                    # Targets
-                    targ_path = Path(batch["filepath"][j])
-                    targ_cube = xr.open_dataset(targ_path)
-
-                    lat = targ_cube.lat
-                    lon = targ_cube.lon
-
-                    ndvi_preds = preds[j,:,0,...].detach().cpu().numpy()
-                    pred_cube = xr.Dataset({"ndvi_pred": xr.DataArray(data = ndvi_preds, coords = {"time": targ_cube.time.isel(time = slice(4,None,5)).isel(time = slice(self.context_length,self.context_length+self.target_length)), "lat": lat, "lon": lon}, dims = ["time","lat", "lon"])})
-
-                    pred_dir = self.pred_dir
-                    pred_path = pred_dir/targ_path.parent.stem/targ_path.name
-                    pred_path.parent.mkdir(parents = True, exist_ok = True)
-                    if not pred_path.is_file():
-                        pred_cube.to_netcdf(pred_path, encoding={"ndvi_pred":{"dtype": "float32"}})
-                    
-                elif self.hparams.setting in ["en21xold", "en22"]:
-                    # Targets
-                    targ_path = Path(batch["filepath"][j])
-                    targ_cube = xr.open_dataset(targ_path)
-                    tile = targ_path.name[:5]
-
-                    hrd = preds[j,...].permute(2,3,1,0).squeeze(2).detach().cpu().numpy() if "full" not in aux else aux["full"][j,...].permute(2,3,1,0).detach().cpu().numpy()  # h, w, c, t
-                    
-                    # Masks
-                    masks = ((lc >= self.min_lc).bool() & (lc <= self.max_lc).bool()).type_as(preds)  # mask for outlayers using lc threshold   # mask for outlayers using lc threshold           
-                    masks = masks[j,...].permute(1,2,0).detach().cpu().numpy() 
-
-                    landcover = lc[j,...].permute(1,2,0).detach().cpu().numpy() 
-                    static = static[j,...].permute(1,2,0).detach().cpu().numpy()
-                    geom = targ_cube.geom
-                 
-                    # Paths
-                    if self.n_stochastic_preds == 1:
-                        if targ_path.parents[1].name == "sim_extremes": 
-                            pred_dir = self.pred_dir/targ_path.parents[0].name
-                        else:
-                            pred_dir = self.pred_dir
-                        pred_path = pred_dir/targ_path.name
-                    else:
-                        if targ_path.parents[1].name == "sim_extremes":
-                            pred_dir = self.pred_dir/tile/targ_path.parents[0].name
-                        else:
-                            pred_dir = self.pred_dir/tile
-                        pred_path = pred_dir/f"pred_{i+1}_{targ_path.name}"
-
-                    # TODO save all preds for one cube in same file....
-                    pred_dir.mkdir(parents = True, exist_ok = True)
-
-                    # Axis
-                    y = targ_cube["y"].values
-                    x = targ_cube["x"].values
-
-
-                    # Saving
-                    targ_cube["ndvi_target"] = (targ_cube.nir - targ_cube.red)/(targ_cube.nir+targ_cube.red+1e-6)
-                    pred_cube = xr.Dataset({"ndvi_pred": xr.DataArray(data = hrd, coords = {"time": targ_cube.time.isel(time = slice(self.context_length,self.context_length+self.target_length)), "latitude": y, "longitude": x}, dims = ["latitude", "longitude", "time"])})
-                    pred_cube["ndvi_target"] = xr.DataArray(data = targ_cube["ndvi_target"].isel(time = slice(self.context_length,self.context_length+self.target_length)).values, coords = {"time": targ_cube.time.isel(time = slice(self.context_length,self.context_length+self.target_length)), "latitude": y, "longitude": x}, dims = ["latitude", "longitude", "time"])
-                    pred_cube["mask"] = xr.DataArray(data = masks[:,:,0], coords = {"latitude": y, "longitude": x}, dims = ["latitude", "longitude"])
-                    pred_cube["landcover"] = xr.DataArray(data = landcover[:,:,0], coords = {"latitude": y, "longitude": x}, dims = ["latitude", "longitude"])
-                    pred_cube["geomorphons"] = xr.DataArray(data = geom, coords = {"latitude": y, "longitude": x}, dims = ["latitude", "longitude"])
-                    pred_cube["SRTM"] = xr.DataArray(data = static[:,:,0], coords = {"latitude": y, "longitude": x}, dims = ["latitude", "longitude"])
-                    
-                    if not pred_path.is_file():
-                      pred_cube.to_netcdf(pred_path, encoding={"ndvi_pred":{"dtype": "float32"}, "ndvi_target":{"dtype": "float32"}, "mask":{"dtype": "float32"}, "landcover":{"dtype": "float32"}, "geomorphons":{"dtype": "float32"}, "SRTM":{"dtype": "float32"}})
-                    
-                    
-                    # Vitus code
-                    # pred_cube = xr.Dataset({"kndvi_pred": xr.DataArray(data = (np.tanh(1) * hrd[:,:,0,:]).clip(0, np.tanh(1)), coords = {"time": targ_cube.time.isel(time = slice(9,45)), "y": y, "x": x}, dims = ["y", "x", "time"])})
-                    # pred_cube["kndvi"] = xr.DataArray(data = targ_cube["kndvi"].isel(time = slice(9,45)).values, coords = {"time": targ_cube.time.isel(time = slice(9,45)), "y": y, "x": x}, dims = ["y", "x", "time"])
-
-                    # if not pred_path.is_file():
-                       # pred_cube.to_netcdf(pred_path)
-                                       
-                else:
-                    cubename = batch["cubename"][j]
-                    cube_dir = self.pred_dir/cubename[:5]
-                    cube_dir.mkdir(parents = True, exist_ok = True)
-                    cube_path = cube_dir/f"pred{i+1}_{cubename}"
-                    np.savez_compressed(cube_path, highresdynamic = preds[j,...].permute(2,3,1,0).detach().cpu().numpy() if "full" not in aux else aux["full"][j,...].permute(2,3,1,0).detach().cpu().numpy())
-
-            if self.hparams.compute_metric_on_test:
-                #self.metric.compute_on_step = True
-                scores.append(self.metric(preds, batch))
-                #self.metric.compute_on_step = False
-            
-        return scores
-    
-    def test_epoch_end(self, test_step_outputs):
-        '''Called at the end of a test epoch with the output of all test steps.'''
         if self.hparams.compute_metric_on_test:
+            metric = self.metric(preds, batch["target"][0][:, :, self.hparams["loss"]["ndvi_pred_idx"],...])
+
+        return
+           
+
+    def on_test_epoch_end(self):
+        '''Called at the end of a test epoch with the output of all test steps.'''
+
+        if self.hparams.compute_metric_on_test:
+  
+            # Save individual metric per test sample. Need to have them in the test_step and pass them here
             self.pred_dir.mkdir(parents = True, exist_ok = True)
             with open(self.pred_dir/f"individual_scores_{self.global_rank}.json", "w") as fp:
-                json.dump([{k: v if isinstance(v, str) else v.item() for k,v in test_step_outputs[i][j][l].items()} for i in range(len(test_step_outputs)) for j in range(len(test_step_outputs[i])) for l in range(len(test_step_outputs[i][j]))], fp)
+                json.dump({k: v for k,v in self.indiv_test_scores}, fp)
             
-            scores = self.metric.compute()
+            # Save and log overall test metric
+            current_scores = self.metric.compute()
+            self.log_dict({l+"_test": current_scores[l] for l in current_scores}, sync_dist=True) # is a dict with {"metric name": val}
+            self.metric.reset()
+
             if self.trainer.is_global_zero:
                 with open(self.pred_dir/"total_score.json", "w") as fp:
-                    json.dump({k: v if isinstance(v, str) else v.item() for k,v in scores.items()}, fp)
+                    json.dump({k: v if isinstance(v, str) else v.item() for k,v in current_scores.items()}, fp)
     
     def teardown(self, stage):
         if stage == "test" and self.hparams.compute_metric_on_test:
             if self.global_rank == 0:
-                data = []
+                data = {}
                 for path in self.pred_dir.glob("individual_scores_*.json"):
                     with open(path, "r") as fp:
-                        data += json.load(fp)
+                        data.update(json.load(fp)) # Gets the keys (i.e. the indiv file names)
                     path.unlink(missing_ok=True)
                 if len(data) == 0:
                     return
+
+                # Combine all to one file, write scroes only once
+                dict_out = {}
                 out_names = []
                 out = []
                 for d in data:
-                    if d["name"] not in out_names:
-                        out.append(d)
-                        out_names.append(d["name"])
+                    if d not in out_names:
+                        dict_out[d]= data[d]
+                        out_names.append(d)
+                        out.append(data[d])
                 with open(self.pred_dir/f"individual_scores.json", "w") as fp:
-                    json.dump(out, fp)
+                    json.dump(dict_out, fp)
+
         return
    
