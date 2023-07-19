@@ -181,16 +181,15 @@ class SpatioTemporalTask(pl.LightningModule):
             ndvi_preds = preds[j].detach().cpu().numpy()
             # Save predicitons
             pred_dir = self.pred_dir
-            pred_path = pred_dir/targ_path.parent.stem/targ_path.name
+            pred_path = pred_dir/targ_path.name
             pred_path.parent.mkdir(parents = True, exist_ok = True)
             if not pred_path.is_file():
                 np.savez(pred_path, preds=ndvi_preds)
-            #scores.append((targ_path, self.metric(ndvi_preds, batch["target"][0][j, :, self.hparams["loss"]["ndvi_pred_idx"],...])))
-            scores.append((str(targ_path.name), 0.5)) # TOCHANGE
+            
+            if self.hparams.compute_metric_on_test:
+                ndvi_preds = torch.tensor(ndvi_preds, dtype=torch.float32).unsqueeze(-1)
+                scores.append((str(targ_path), self.metric(ndvi_preds, batch["target"][0][j, :, self.hparams["loss"]["ndvi_pred_idx"],...].unsqueeze(0))))
         self.indiv_test_scores = scores
-
-        if self.hparams.compute_metric_on_test:
-            metric = self.metric(preds, batch["target"][0][:, :, self.hparams["loss"]["ndvi_pred_idx"],...])
 
         return
            

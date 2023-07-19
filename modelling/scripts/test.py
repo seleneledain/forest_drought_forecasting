@@ -46,7 +46,6 @@ def test_model(setting_dict: dict, checkpoint: str):
 
     # Logger
     setting_dict["Logger"]["version"] = 'full_test'
-    print(setting_dict["Logger"])
     logger = pl.loggers.TensorBoardLogger(**setting_dict["Logger"])
 
     # Trainer
