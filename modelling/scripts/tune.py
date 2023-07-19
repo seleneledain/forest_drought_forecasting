@@ -2,22 +2,23 @@
 """Tune script
 """
 
-
-#TODO test in Dresden
-#TODO 2 modes: overwrite existing / tune only non-existing
-
-import itertools
+import yaml
+import torch
 import json
+import itertools
 import os
 from pathlib import Path
 import shutil
 import subprocess
-import sys
 import time
-import yaml
 import pandas as pd
+import sys
+sys.path.insert(0, '/Users/selene/Documents/forest_drought_forecasting/modelling/')
 from earthnet_models_pytorch.utils import parse_setting
 
+import os
+# Set the environment variable
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 class Tuner:
 
@@ -41,17 +42,30 @@ class Tuner:
 
         with open(params_file, 'r') as fp:
             params_dict = yaml.load(fp, Loader = yaml.FullLoader)
+        
 
         outpath = Path(params_file).parent/"grid"
 
         outpath.mkdir(parents = True, exist_ok = True)
-
-        flat_params = [[{"param": param_name, "val": v} for v in param_vals] for param_name, param_vals in params_dict.items()]
         
+        flat_params = []
+        """
+        for k, v in params_dict.items():
+            if k=='Model':
+                flat_params.append([{"param": f"Model.{param_name}", "val": val} for param_name, param_vals in params_dict[k].items() if isinstance(param_vals, list) for val in param_vals])
+        """
+        for k, v in params_dict.items():
+            if k=='Model':
+                for param_name, param_vals in params_dict[k].items():
+                    if isinstance(param_vals, list):
+                        param_list = []
+                        for val in param_vals:
+                            param_list.append({"param": f"Model.{param_name}", "val": val})
+                        flat_params.append(param_list)
+    
         trials = list(itertools.product(*flat_params))
-
+        
         trial_paths = []
-
         for trial in trials:
             trial_name = []
             for elem in trial:
@@ -59,11 +73,11 @@ class Tuner:
                 trial_name.append(f"({access[-1]}={elem['val']})")
                 access = [int(key) if key.isdigit() else key for key in access]
                 setting_dict = self.update_dict(setting_dict, access, elem['val'])
-
+            
             trial_name = "_".join(trial_name)
 
             trial_path = outpath/(trial_name+".yaml")
-
+            
             with open(trial_path, 'w') as fp:
                 yaml.dump(setting_dict, fp)
 
@@ -95,10 +109,10 @@ class Tuner:
     def start_one_trial(self, trial_path):
         # TODO export CUDA_VISIBLE_DEVICES ???
         
-        script_path = Path(sys.path[1]).parent.parent/"bin"
-
+        script_path = Path(sys.path[1])
+        
         if not self.slurm:
-            cmd = ["train.py", trial_path] #f"{script_path/'train.py'} {trial_path}"
+            cmd = [f"{script_path}/train.py" , trial_path]
         else:
             cmd = ["sbatch", f"{script_path/'slurmrun.sh'}", trial_path, "train"] #f"{script_path/'slurmrun.sh'} {trial_path} train"
         out = subprocess.Popen(cmd, stdout=subprocess.PIPE)
@@ -181,10 +195,8 @@ class Tuner:
             out_dir = Path(setting_dict["Logger"]["save_dir"])/setting_dict["Logger"]["name"]/setting_dict["Logger"]["version"]
             with open(out_dir/"validation_scores.json", 'r') as fp:
                 scores = json.load(fp)
-            if setting_dict["Setting"] == "en21-std":
-                score = max([s["EarthNetScore"] for s in scores])
-            else:
-                score = min([s["RMSE_Veg"] for s in scores])
+    
+            score = min([s["RMSE_drought"] for s in scores])
 
             best_scores.append(score)
 

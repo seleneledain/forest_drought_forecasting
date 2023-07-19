@@ -11,7 +11,7 @@ import pytorch_lightning as pl
 
 import json
 import sys
-sys.path.insert(0, '/Users/led/Documents/forest_drought_forecasting/modelling/')
+sys.path.insert(0, '/Users/selene/Documents/forest_drought_forecasting/modelling/')
 from earthnet_models_pytorch.model import MODELS, MODELTASKS, MODELTASKNAMES
 from earthnet_models_pytorch.setting import DATASETS
 from earthnet_models_pytorch.utils import parse_setting

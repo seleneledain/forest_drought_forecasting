@@ -32,7 +32,7 @@ Trainer:
     #overfit_batches: 0.0
   
 Data:
-    base_dir: "/Users/led/Desktop/New code/" #where data is stored
+    base_dir: "/Users/selene/Desktop/New code/" #where data is stored
     test_track: "iid"
     train_batch_size: 4 #96
     val_batch_size: 4
