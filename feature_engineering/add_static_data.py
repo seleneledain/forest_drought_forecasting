@@ -64,7 +64,9 @@ BANDS_DESCRIPTION = {
     "PH30_60": "pH 30-60 cm", 
     "PH5_15": "pH 5-15 cm", 
     "PH60_100": "pH 60-100 cm",
-    "NDVI": "Normalized Difference Vegetation Index"
+    "NDVI": "Normalized Difference Vegetation Index",
+    "DEM": "Digital elevation model",
+    "DROUGHT_MASK": "Occurence of drought event in pixel",
 }
 
 def get_attrs_for_band(band, provider):
@@ -200,6 +202,8 @@ dict_static_features = {
     "CLAY30_60": "ton-final-30_60-rf.tif",
     "CLAY5_15": "ton-final-5_15-rf.tif", 
     "CLAY60_100": "ton-final-60_100-rf.tif",
+    "DEM": "DEM.tif",
+    "DROUGHT_MASK": "polys_brun.tif",
     "FED0_5": "trd-feinerde-final-0_5-rf.tif", 
     "FED100_200": "trd-feinerde-final-100_200-rf.tif", 
     "FED15_30": "trd-feinerde-final-15_30-rf.tif",  

@@ -16,6 +16,8 @@ BANDS_DESCRIPTION = {
     "CLAY30_60": "Clay content 30-60 [%] cm",
     "CLAY5_15": "Clay content 5-15 [%] cm", 
     "CLAY60_100": "Clay content 60-100 [%] cm",
+    "DEM": "Digital elevation model",
+    "DROUGHT_MASK": "Occurence of drought event in pixel",
     "FED0_5": "Fine earth density [g/cm3] 0-5 cm", 
     "FED100_200": "Fine earth density [g/cm3] 100-200 cm",
     "FED15_30": "Fine earth density [g/cm3] 15-30 cm", 
