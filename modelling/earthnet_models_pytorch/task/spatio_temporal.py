@@ -146,7 +146,7 @@ class SpatioTemporalTask(pl.LightningModule):
         #logs['loss_val'] = torch.tensor(loss, dtype=torch.float32).clone().detach()
         #self.log_dict(logs)
         self.log('val_batch_size', torch.tensor(self.hparams.val_batch_size, dtype=torch.float32), sync_dist=True)
-        self.log('loss_val', torch.tensor(loss.clone().detach(), dtype=torch.float32).clone().detach(), sync_dist=True)
+        self.log('loss_val', torch.tensor(loss.clone().detach(), dtype=torch.float32), sync_dist=True)
 
         
     def on_validation_epoch_end(self):

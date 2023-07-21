@@ -16,9 +16,6 @@ import sys
 sys.path.insert(0, '/Users/selene/Documents/forest_drought_forecasting/modelling/')
 from earthnet_models_pytorch.utils import parse_setting
 
-import os
-# Set the environment variable
-#os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 class Tuner:
 
@@ -49,11 +46,7 @@ class Tuner:
         outpath.mkdir(parents = True, exist_ok = True)
         
         flat_params = []
-        """
-        for k, v in params_dict.items():
-            if k=='Model':
-                flat_params.append([{"param": f"Model.{param_name}", "val": val} for param_name, param_vals in params_dict[k].items() if isinstance(param_vals, list) for val in param_vals])
-        """
+
         for k, v in params_dict.items():
             if k=='Model':
                 for param_name, param_vals in params_dict[k].items():
@@ -117,7 +110,6 @@ class Tuner:
         else:
             cmd = ["sbatch", f"{script_path/'slurmrun.sh'}", trial_path, "train"] #f"{script_path/'slurmrun.sh'} {trial_path} train"
         out = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        #print(out.stdout.read()) # solved the issue
         
         return out
 
@@ -153,7 +145,6 @@ class Tuner:
                         if manager.returncode == 0:
                             done[idx] = True
                         else:
-                            # managers[idx] = self.start_one_trial(self.trial_paths[idx]) # TODO this would be auto-restarting
                             done[idx] = True
                             errors += f"{self.trial_paths[idx]} failed with returncode {manager.returncode}\n"
                 else:
