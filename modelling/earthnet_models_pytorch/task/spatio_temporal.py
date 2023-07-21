@@ -104,6 +104,7 @@ class SpatioTemporalTask(pl.LightningModule):
         return self.model(x.float(), **kwargs)
 
     def configure_optimizers(self):
+        self.print('Configuring optims')
         optimizers = [getattr(torch.optim,o["name"])(self.parameters(), **o["args"]) for o in self.hparams.optimization["optimizer"]] # This gets any (!) torch.optim optimizer
         # torch.optim.lr_scheduler provides several methods to adjust the learning rate based on the number of epochs. 
         shedulers = [getattr(torch.optim.lr_scheduler,s["name"])(optimizers[i], **s["args"]) for i, s in enumerate(self.hparams.optimization["lr_shedule"])] # This gets any(!) torch.optim.lr_scheduler - but only those with standard callback will work (i.e. not the Plateau one)
@@ -127,9 +128,11 @@ class SpatioTemporalTask(pl.LightningModule):
                     logs[f"{shedule_name}_i"] = shed_val
             else:
                 logs[shedule_name] = kwargs[shedule_name]
-        logs['batch_size_train'] = torch.tensor(self.hparams.train_batch_size, dtype=torch.float32)
-        logs['loss_train'] = loss.clone().detach() #torch.tensor(loss, dtype=torch.float32) # already in logs normally
-        self.log_dict(logs)  
+        #logs['batch_size_train'] = torch.tensor(self.hparams.train_batch_size, dtype=torch.float32)
+        #logs['loss_train'] = loss.clone().detach() #torch.tensor(loss, dtype=torch.float32) # already in logs normally
+        #self.log_dict(logs)  
+        self.log('batch_size_train', torch.tensor(self.hparams.train_batch_size, dtype=torch.float32), sync_dist=True)
+        self.log('loss_train', loss.clone().detach(), sync_dist=True)
         
         return loss
 
@@ -139,10 +142,11 @@ class SpatioTemporalTask(pl.LightningModule):
         preds = self(batch) #self(x.float()) #, pred_start = self.context_length, n_preds = self.target_length)  # output model
         loss, logs = self.loss(preds, batch)
         metric = self.metric(preds, batch["target"][0][:, :, self.hparams["loss"]["ndvi_pred_idx"],...]) # Check that shapes are ok
-        batch_size = torch.tensor(self.hparams.val_batch_size, dtype=torch.int64)#float32)
-        logs['val_batch_size'] = torch.tensor(self.hparams.val_batch_size, dtype=torch.float32)
-        logs['loss_val'] = torch.tensor(loss.clone().detach(), dtype=torch.float32)
-        self.log_dict(logs)
+        #logs['val_batch_size'] = torch.tensor(self.hparams.val_batch_size, dtype=torch.float32)
+        #logs['loss_val'] = torch.tensor(loss, dtype=torch.float32).clone().detach()
+        #self.log_dict(logs)
+        self.log('val_batch_size', torch.tensor(self.hparams.val_batch_size, dtype=torch.float32), sync_dist=True)
+        self.log('loss_val', torch.tensor(loss.clone().detach(), dtype=torch.float32).clone().detach(), sync_dist=True)
 
         
     def on_validation_epoch_end(self):

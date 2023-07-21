@@ -18,7 +18,7 @@ from earthnet_models_pytorch.utils import parse_setting
 
 import os
 # Set the environment variable
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+#os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 class Tuner:
 
@@ -113,10 +113,12 @@ class Tuner:
         
         if not self.slurm:
             cmd = [f"{script_path}/train.py" , trial_path]
+            pass
         else:
             cmd = ["sbatch", f"{script_path/'slurmrun.sh'}", trial_path, "train"] #f"{script_path/'slurmrun.sh'} {trial_path} train"
         out = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-
+        #print(out.stdout.read()) # solved the issue
+        
         return out
 
     def run_trials(self):
@@ -124,8 +126,8 @@ class Tuner:
         managers = []
         for trial_path in self.trial_paths:
             managers.append(self.start_one_trial(trial_path))
-            if not self.slurm:
-                managers[-1].wait()
+            #if not self.slurm and len(managers)>1:
+                #managers[-1].wait()
 
         errors = ""
 
@@ -145,6 +147,7 @@ class Tuner:
             time.sleep(60)
             for idx, manager in enumerate(managers):
                 if not self.slurm:
+                    manager.stdout.read()
                     manager.poll()
                     if manager.returncode is not None:
                         if manager.returncode == 0:
