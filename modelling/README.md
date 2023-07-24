@@ -59,11 +59,6 @@ In order to train a model we need to set up a `config.yaml`, see above regarding
 
 1. If you are not using the context and target lengths of the data samples as setup in `base.yaml`, then you need change them also in `task.__init__.py`.
 2. Your training data folder should be named `train`. If not, you must adapt the folder name in the `setting.drought_data.setup` function.
-2. In `scripts/train.py` adapt the path to your setup (i.e. insert the path to your working directory)
-```
-import sys
-sys.path.insert(0, '/path_to_repo/forest_drought_forecasting/modelling/')
-```
 3. Then we just do:
 ```
 python scripts/train.py configs/drought/drought_lstm/base.yaml
@@ -96,13 +91,8 @@ Each combination will have its own results saved to `experiments`. A comparison 
 
 To test a model you have trained. 
 
-1. You might have different testing tracks/datasets.
-2. In `scripts/test.py` adapt the path to your setup (i.e. insert the path to your working directory)
-```
-import sys
-sys.path.insert(0, '/path_to_repo/forest_drought_forecasting/modelling/')
-```
-3. Then we just do:
+1. You might have different testing tracks/datasets. You can add their names as well as context and target lengths in `task.__init__.py`
+2. Then we just do:
 ```
 python scripts/test.py --setting configs/drought/drought_lstm/base.yaml --checkpoint experiments/drought/drought-lstm/drought_lstm/full_train/checkpoints/last.ckpt --track track_name --pred_dir 'path_to_store_predictions’
 ```
@@ -112,7 +102,7 @@ To view results/testing progress:
 conda activate drought
 cd /path_to/experiments/drought/drought-lstm/drought_lstm/
 tensorboard --logdir your_exp
-``````
+```
 
 
 ## Debug
