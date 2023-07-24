@@ -16,7 +16,8 @@ import pytorch_lightning as pl
 from pytorch_lightning.strategies import DDPStrategy
 
 import sys
-sys.path.insert(0, '/Users/selene/Documents/forest_drought_forecasting/modelling/')
+current_working_path = os.getcwd()
+sys.path.insert(0, current_working_path)
 from earthnet_models_pytorch.model import MODELS, MODELTASKS
 from earthnet_models_pytorch.setting import DATASETS
 from earthnet_models_pytorch.utils import parse_setting

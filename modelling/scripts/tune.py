@@ -13,7 +13,8 @@ import subprocess
 import time
 import pandas as pd
 import sys
-sys.path.insert(0, '/Users/selene/Documents/forest_drought_forecasting/modelling/')
+current_working_path = os.getcwd()
+sys.path.insert(0, current_working_path)
 from earthnet_models_pytorch.utils import parse_setting
 
 
