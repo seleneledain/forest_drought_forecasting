@@ -142,7 +142,7 @@ def get_raster_crs(raster_file):
 
     return crs
 
-def match_raster_to_target(input_file, target_file, target_crs="epsg:4326", resampling_method="nearest"):
+def match_raster_to_target(input_file, target_file, target_crs="epsg:4326", resampling_method="bilinear"):
     """
     Matches an input raster to a target raster and returns a NumPy array.
     :param input_file: path to input raster file
@@ -241,7 +241,7 @@ dict_static_features = {
 }
 
 
-def match_raster_to_minicube(input_file, minicube, target_crs="epsg:4326", resampling_method="nearest"):
+def match_raster_to_minicube(input_file, minicube, target_crs="epsg:4326", resampling_method="bilinear"):
     """
     Matches an input raster to a target raster and returns a NumPy array.
     :param input_file: path to input raster file
