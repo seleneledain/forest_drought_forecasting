@@ -7,6 +7,7 @@ Date: June 23rd, 2023
 
 import numpy as np
 import xarray as xr
+import pandas as pd
 
 def check_if_interp(data, max_nan):
     """
@@ -90,9 +91,9 @@ def interpolate_loess(y, data_array):
     if np.any(mask):  # Interpolate missing values
         x = time_numeric[~mask]
         y_interp = np.interp(time_numeric, x, y[~mask]) #linear interpolation
-        lowess = sm.nonparametric.lowess(y_interp, time_numeric, frac=0.1)
+        lowess = sm.nonparametric.lowess(y_interp, time_numeric, frac=0.07)
     else:  # No missing values, perform LOESS directly
-        lowess = sm.nonparametric.lowess(y, time_numeric, frac=0.1)
+        lowess = sm.nonparametric.lowess(y, time_numeric, frac=0.07)
 
     # Extract the smoothed values
     smoothed_values = lowess[:, 1]
@@ -103,17 +104,19 @@ def interpolate_loess(y, data_array):
 
 def remove_lower_10_per_week(cube):
     """
-    For each pixel timeseries and each variable, find 10th percentile per week of year and remove values below.
+    For each pixel timeseries and each Sentinel-2 variable, find 5th/10th percentile per week of year and remove values below.
     """
-
-    filtered_cloud = cube.where(cube.s2_mask==0)
+    
+    s2_vars = [name for name in list(cube.variables) if name.startswith('s2')]
+    filtered_cloud = cube[s2_vars].where(cube.s2_mask==0)
 
     # Find lower 10% per week of year for each pixel
     filtered_cloud['time'] = pd.to_datetime(filtered_cloud.time.values)
     ds_weekly = filtered_cloud.groupby('time.week')
-    ds_10th_percentile = ds_weekly.reduce(np.nanquantile, q=0.1, dim='time')
+    ds_10th_percentile = ds_weekly.reduce(np.nanquantile, q=0.05, dim='time')
 
-    # Remove lower 10% per week of year for each pixel
+    # Remove lower 10% per week of year for each pixel (for S2)
+    
     filtered_ds_10 = xr.zeros_like(filtered_cloud)
     for i, t in enumerate(filtered_cloud['time']):
         # Filter the data for that week
@@ -122,7 +125,9 @@ def remove_lower_10_per_week(cube):
         above_quant = data.where(data>=quant)
         filtered_ds_10.loc[dict(time=t)] = above_quant
         
-    return filtered_ds_10
+    cube[s2_vars] = filtered_ds_10
+    
+    return cube
 
 
 def smooth_s2_timeseries(cube, max_nan):
@@ -133,10 +138,12 @@ def smooth_s2_timeseries(cube, max_nan):
     :param max_nan: maximum number of consecutive NaNs allowed. If more, the pixel will not be used/sampled
     """
     # Filter out clouds and lower 10 percentile
-    #cube = remove_lower_10_per_week(cube)
+    cube = remove_lower_10_per_week(cube)
+    print('Cloud cleaning - removed lower 10% per week of yr')
     
     # First check if to interpolate or not
     cube = check_if_interp(cube, max_nan)
+    print('Cloud cleaning - checked if interp')
     
     # Loop through variables and interpolate/smooth pixel timeseries for Sentinel-2
     for variable_name in cube.data_vars:
