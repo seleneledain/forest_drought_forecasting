@@ -57,6 +57,7 @@ conda activate drought
     - Your training data folder should be named `train`. If not, you must adapt the folder name in the `setting.drought_data.setup` function.
     - Make sure the path to the data folder is specified correctly in your config file.
     - Indicate the index at which NDVI is located in your data samples by changing `ndvi_targ_idx`.
+    - Set `val_pct`to define the proportion of the training set to be kept apart for validation.
 2. If you are not using the context and target lengths of the data samples as setup in `base.yaml`, then you need change them also in `task.__init__.py`.
 3. Then we just do:
 ```
