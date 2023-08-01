@@ -1,6 +1,4 @@
-# Drought Impact Forecasting 
-
-A PyTorch lightning library for Earth surface forecasting.
+# Forest drought impact forecasting 
 
 This library contains models, dataloaders and scripts for Earth surface forecasting (specifically NDVI for drought impacts). This code is based off the work developed in the [EarthNet](www.earthnet.tech) challenge and follows a similar approach and structure.
 
@@ -8,7 +6,7 @@ It is currently under development, thus do expect bugs and please report them!
 
 The library is build on [PyTorch](www.pytorch.org), a Python deep learning library, and [PyTorch Lightning](https://www.pytorchlightning.ai/), a PyTorch wrapper reducing boilerplate code and adding functionality to scale experiments.
 
-There is three main components:
+There are three main components:
 
     1. Model - plain PyTorch models just implementing simple forward passes.
     2. Setting - Dataset and Metrics for a particular problem
@@ -55,10 +53,11 @@ conda activate drought
 ## Train
 
 
-In order to train a model we need to set up a `config.yaml`, see above regarding for more details.
-
-1. If you are not using the context and target lengths of the data samples as setup in `base.yaml`, then you need change them also in `task.__init__.py`.
-2. Your training data folder should be named `train`. If not, you must adapt the folder name in the `setting.drought_data.setup` function.
+1. In order to train a model we need to set up a `config.yaml`.
+    - Your training data folder should be named `train`. If not, you must adapt the folder name in the `setting.drought_data.setup` function.
+    - Make sure the path to the data folder is specified correctly in your config file.
+    - Indicate the index at which NDVI is located in your data samples by changing `ndvi_targ_idx`.
+2. If you are not using the context and target lengths of the data samples as setup in `base.yaml`, then you need change them also in `task.__init__.py`.
 3. Then we just do:
 ```
 python scripts/train.py configs/drought/drought_lstm/base.yaml
