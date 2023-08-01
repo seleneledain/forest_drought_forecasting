@@ -36,6 +36,8 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
 The first step is to identify locations around Switzerland. In particular, we collect the center coordinates of scenes of 2.56km x 2.56 km that will then be called during Data Downloading.
 The approach here uses a shapefile of the forests in Switzerland, as well as some polygons that label droughts (obtained from Brun et al., 2020. https://doi.org/10.1111/gcb.15360). We want to ensure that we sample scenes containing drought events, as well as scenes across all the country.
 
+Reminder: by sampling N scenes you will be samoling > N data samples. For each pixel, multiple timeseries can be generateed too. 
+
 **How to sample coordinates**
 1. Rasterise your shapefiles, reproject, and upsample to a 2.56km resolution where each pixel is a continuous value between 0-1 (e.g. proportion of forest contained in each pixel). Use `sampling/rasterise.py` and refer to `sampling/sampling.ipynb`.
 2. Sample scenes with containing drought labels
@@ -64,6 +66,7 @@ N = 100 # Number of scenes to sample
 
 sample_negatives(forest_mask_256, drought_labels_256, thresh_forest, output_file, N)
 ```
+
 
 ## 1. Data Downloading and Dataset creation
 
