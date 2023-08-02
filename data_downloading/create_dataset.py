@@ -13,6 +13,7 @@ import warnings
 warnings.filterwarnings('ignore')
 from datetime import datetime
 import numpy as np
+import random
 
 import sys
 # Add the path to the repository containing the file
@@ -78,8 +79,7 @@ def save_context_target(cube_context, cube_target, file_name, split, root_dir):
     
     context_array = cube_context.to_array().values
     target_array = cube_target.to_array().values
-    np.savez(os.path.join(path_to_save,file_name), context=context_array, target=target_array)
-    
+    np.savez(os.path.join(path_to_save,file_name), context=context_array, target=target_array) 
     
     
 def obtain_context_target_cubes(cube, context, target, split, root_dir, specs, shift=0):
@@ -153,6 +153,13 @@ def obtain_context_target_cubes(cube, context, target, split, root_dir, specs, s
     return 
 
 def save_min_max(cube, split, root_dir, specs):
+    """
+    Min and max values per band, saved to a numpy array. The order of the bands should be the same as in the data samples after dropping bands: Sentinel2, custom data in the same order as provided in config, ERA5
+    """
+
+    # Modifying the dataset variable order to match final output
+    new_order = list([name for name in list(cube.variables) if name.startswith('s2')])  +list([name for name in list(cube.variables) if not name.startswith('era5') and not name.startswith('s2') and name not in ['time', 'lat', 'lon']]) + list([name for name in list(cube.variables) if name.startswith('era5')]) 
+    cube = cube[new_order]
     
     min_vals = cube.min().to_array().values
     max_vals = cube.max().to_array().values
@@ -189,6 +196,12 @@ def generate_samples(config):
     :param root_dir: str, path to save data
     :param normalisation: boolean. Compute min/max in space and time for each variables and save values
     :param shift: int, number of itmeframes of shift between ERA5 and S2. The final dates in the xarray will be the non-shifted ones
+    :param pixs_per_scene: number of pixels to sample per scene. None if no limit
+    :param cloud_cleaning: max number of consecutive nan value in timeseries allowed, after which cloud cleaning will be performed
+    :param target_in_summer: If target start date should be included in June-Sep
+    :param drought_labels: If to use drought mask for sampling pixels
+    :param forest_thresh: threshold of forest to consider to sample pixel
+    :param drought_thresh: threshold of drought to consider to sample pixel
     """
 
     
@@ -224,6 +237,7 @@ def generate_samples(config):
         if config.cloud_cleaning:
             cube = smooth_s2_timeseries(cube, config.cloud_cleaning)
             print('Performed cloud cleaning')
+        # TO DO: set to_sample = 1 everywhere if cloud cleaning is not performed
 
         # Deal with NaNs (or -9999)
         # For era5 linear interpolation
@@ -251,9 +265,9 @@ def generate_samples(config):
         
     # Split to context/target pairs and save
     if config.target_in_summer:
-        obtain_context_target_pixels_summer(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.shift, config.drought_labels, config.forest_thresh, config.drought_thresh)
+        obtain_context_target_pixels_summer(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.pixs_per_scene, config.shift, config.drought_labels, config.forest_thresh, config.drought_thresh)
     else:
-        obtain_context_target_pixels(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.shift, config.drought_labels, config.forest_thresh, config.drought_thresh)
+        obtain_context_target_pixels(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.pixs_per_scene, config.shift, config.drought_labels, config.forest_thresh, config.drought_thresh)
    
     print(f"Created {config.split} samples from cube!")
         
@@ -290,7 +304,7 @@ def find_date_closest_summer_end(time_yr):
         return None, None
 
 
-def obtain_context_target_pixels_summer(cube, context, target, split, root_dir, specs, bands_to_drop, shift=0, drought_labels=False, forest_thresh=0.5, drought_thresh=0):
+def obtain_context_target_pixels_summer(cube, context, target, split, root_dir, specs, bands_to_drop, pixs_per_scene, shift=0, drought_labels=False, forest_thresh=0.5, drought_thresh=0):
     """
     Split into context target pairs given whole time interval of the cube
     
@@ -305,6 +319,7 @@ def obtain_context_target_pixels_summer(cube, context, target, split, root_dir, 
     :param drought_labels: Select pixels that are labeled with a drought event using drought mask in data
     :param forest_thresh: threshold to pass in sampling for forest ratio in pixel 
     :param drought_thresh: threshold to pass in sampling for drought ratio in pixel 
+    :param pixs_per_scene: number of pixels to sample per scene. None if no limit
     """
     from datetime import datetime
     
@@ -423,10 +438,10 @@ def obtain_context_target_pixels_summer(cube, context, target, split, root_dir, 
                     sub_target = cube_yr.sel(time=slice(dt_target[i],dt_target[i+target]))
 
                 # Extract pixels at lat lons here and save context+target together
-                extract_pixel_timeseries(sub_context, sub_target, shift, split, root_dir, bands_to_drop, drought_labels, forest_thresh, drought_thresh)
+                extract_pixel_timeseries(sub_context, sub_target, shift, split, root_dir, bands_to_drop, drought_labels, forest_thresh, drought_thresh, pixs_per_scene)
 
 
-def extract_pixel_timeseries(cube_context, cube_target, shift, split, root_dir, bands_to_drop, drought_labels, forest_thresh, drought_thresh):
+def extract_pixel_timeseries(cube_context, cube_target, shift, split, root_dir, bands_to_drop, drought_labels, forest_thresh, drought_thresh, pixs_per_scene):
     """
     From a datacube, will extract individual pixel timeseries based on forest mask and to_sample variable.
     Then save them as .npz files.
@@ -439,8 +454,9 @@ def extract_pixel_timeseries(cube_context, cube_target, shift, split, root_dir, 
     :param bands_to_drop: variables to remove when saving pixel timeseries
     :param forest_thresh: threshold to pass in sampling for forest ratio in pixel 
     :param drought_thresh: threshold to pass in sampling for drought ratio in pixel 
+    :param pixs_per_scene: number of pixels to sample per scene. None if no limit
     """
-    # TO DO: set to_sample = 1 everywhere if cloud cleaning is not performed
+    
     start_yr = cube_context.time.to_index().date[0].year
     start_month = cube_context.time.to_index().date[0].month
     start_day = cube_context.time.to_index().date[0].day
@@ -451,45 +467,52 @@ def extract_pixel_timeseries(cube_context, cube_target, shift, split, root_dir, 
     height = len(cube_context.lat)
     
     # Get all the pixels that satisfy condition (forest mask + valid after cloud cleaning)
-    for i_lat, lat in enumerate(cube_context.lat):
-        for i_lon, lon in enumerate(cube_context.lon): 
-            """
-            # Check if to sample
-            if len(cube_context.to_sample.shape)==2:
+    
+    if pixs_per_scene is None:
+        
+        for i_lat, lat in enumerate(cube_context.lat):
+            for i_lon, lon in enumerate(cube_context.lon): 
+                
                 check_to_sample = cube_context.sel(lat=lat, lon=lon).to_sample.values 
-            else:
-                check_to_sample = cube_context.sel(lat=lat, lon=lon).to_sample.values[0]
-            
-            # Check if forest mask
-            if len(cube_context.FOREST_MASK.shape)==2:
                 check_forest_mask = cube_context.sel(lat=lat, lon=lon).FOREST_MASK.values
-            else:
-                check_forest_mask = cube_context.sel(lat=lat, lon=lon).FOREST_MASK.values[0]
-            
-            # Check if drought_mask
-            if drought_labels == True: 
-                if len(cube_context.DROUGHT_MASK.shape)==2:
+                if drought_labels:
                     check_drought_mask = cube_context.sel(lat=lat, lon=lon).DROUGHT_MASK.values
                 else:
-                    check_drought_mask = cube_context.sel(lat=lat, lon=lon).DROUGHT_MASK.values[0]
-            else:
-                check_drought_mask = 1
-            """
-            check_to_sample = cube_context.sel(lat=lat, lon=lon).to_sample.values 
+                    check_drought_mask = 1
+                
+                if check_to_sample and check_forest_mask > forest_thresh and check_drought_mask > drought_thresh:
+                    pixel_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon.values}_{lat.values}_{width}_{height}_{shift}.npz'
+                    save_context_target(cube_context.sel(lat=lat, lon=lon).drop_vars(bands_to_drop), cube_target.sel(lat=lat, lon=lon).drop_vars(bands_to_drop), pixel_name, split, root_dir)
+                    
+    else:
+        # Initialize a counter for successful samples and tested coords
+        successful_samples = 0
+        trials = 0
+
+        # Loop until the desired number of samples is achieved
+        while successful_samples < pixs_per_scene and trials < len(cube_context.lat)*len(cube_context.lon):
+            # Generate random indices for latitudes and longitudes
+            random_lat_index = random.randint(0, len(cube_context.lat) - 1)
+            random_lon_index = random.randint(0, len(cube_context.lon) - 1)
+            lat = cube_context.lat[random_lat_index]
+            lon = cube_context.lon[random_lon_index]
+            trials += 1
+
+            check_to_sample = cube_context.sel(lat=lat, lon=lon).to_sample.values
             check_forest_mask = cube_context.sel(lat=lat, lon=lon).FOREST_MASK.values
             if drought_labels:
                 check_drought_mask = cube_context.sel(lat=lat, lon=lon).DROUGHT_MASK.values
             else:
                 check_drought_mask = 1
-            
-            
+
             if check_to_sample and check_forest_mask > forest_thresh and check_drought_mask > drought_thresh:
                 pixel_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon.values}_{lat.values}_{width}_{height}_{shift}.npz'
                 save_context_target(cube_context.sel(lat=lat, lon=lon).drop_vars(bands_to_drop), cube_target.sel(lat=lat, lon=lon).drop_vars(bands_to_drop), pixel_name, split, root_dir)
+                successful_samples += 1
 
-                
-    
-def obtain_context_target_pixels(cube, context, target, split, root_dir, specs, bands_to_drop, shift=0, forest_thresh=0.5, drought_thresh=0):
+                            
+            
+def obtain_context_target_pixels(cube, context, target, split, root_dir, specs, bands_to_drop, pixs_per_scene, shift=0, forest_thresh=0.5, drought_thresh=0):
     """
     Split into context target pairs given whole time interval of the cube
     
@@ -503,6 +526,7 @@ def obtain_context_target_pixels(cube, context, target, split, root_dir, specs, 
     :param bands_to_drop: variables to remove when saving pixel timeseries
     :param forest_thresh: threshold to pass in sampling for forest ratio in pixel 
     :param drought_thresh: threshold to pass in sampling for drought ratio in pixel 
+    :param pixs_per_scene: number of pixels to sample per scene. None if no limit
     """
     n_frames = len(cube.time)
     lon = specs["lon_lat"][0]
