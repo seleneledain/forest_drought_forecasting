@@ -27,15 +27,25 @@ specs_add_bands = {
 
 bands_to_drop = ["s2_mask", "s2_avail", "s2_SCL", "to_sample", "FOREST_MASK", "DROUGHT_MASK"]
 
-root_dir = '/Users/led/Desktop/New code/'
+# Where to save data
+root_dir = '/Users/selene/Desktop/Unibe/New code/'
 split = 'train_drought'
+
+# Format of data sample
 context = 54 # 9 months 5-daily 
 target =  18 # 3 months 5-daily
 shift = 18
+
+# Data cleaning
 cloud_cleaning = 36 # max_count for cloud_cleaning
 normalisation = True
+remove_pct = 0.05 # Drop lower percentile of data per week of year
+loess_frac = 0.07 # Percent of data to use for LOESS smoothing
+
+# Samples criteria
 target_in_summer = True
 drought_labels = True 
 forest_thresh = 0 
 drought_thresh = 0
+pixs_per_scene = 50
 

@@ -235,9 +235,13 @@ def generate_samples(config):
         
         # Cloud cleaning
         if config.cloud_cleaning:
-            cube = smooth_s2_timeseries(cube, config.cloud_cleaning)
+            cube = smooth_s2_timeseries(cube, config.cloud_cleaning, config.remove_pct, config.loess_frac)
             print('Performed cloud cleaning')
-        # TO DO: set to_sample = 1 everywhere if cloud cleaning is not performed
+        else:
+            # Set to_sample = 1 everywhere if cloud cleaning is not performed
+            ones_dataarray = xr.DataArray(np.ones((len(cube.lat), len(cube.lon))), dims=('lat', 'lon'))
+            cube["to_sample"] = ones_dataarray
+            
 
         # Deal with NaNs (or -9999)
         # For era5 linear interpolation

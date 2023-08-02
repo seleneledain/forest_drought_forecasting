@@ -77,7 +77,7 @@ def find_max_consec_nan(timeseries):
 
 import statsmodels.api as sm
 
-def interpolate_loess(y, data_array):
+def interpolate_loess(y, data_array, loess_frac):
     """
     Perform LOESS regression with NaN handling
     """
@@ -91,9 +91,9 @@ def interpolate_loess(y, data_array):
     if np.any(mask):  # Interpolate missing values
         x = time_numeric[~mask]
         y_interp = np.interp(time_numeric, x, y[~mask]) #linear interpolation
-        lowess = sm.nonparametric.lowess(y_interp, time_numeric, frac=0.07)
+        lowess = sm.nonparametric.lowess(y_interp, time_numeric, frac=loess_frac)
     else:  # No missing values, perform LOESS directly
-        lowess = sm.nonparametric.lowess(y, time_numeric, frac=0.07)
+        lowess = sm.nonparametric.lowess(y, time_numeric, frac=loess_frac)
 
     # Extract the smoothed values
     smoothed_values = lowess[:, 1]
@@ -102,9 +102,9 @@ def interpolate_loess(y, data_array):
 
 
 
-def remove_lower_10_per_week(cube):
+def remove_lower_pct_per_week(cube, pct):
     """
-    For each pixel timeseries and each Sentinel-2 variable, find 5th/10th percentile per week of year and remove values below.
+    For each pixel timeseries and each Sentinel-2 variable, find pct percentile per week of year and remove values below.
     """
     
     s2_vars = [name for name in list(cube.variables) if name.startswith('s2')]
@@ -113,32 +113,34 @@ def remove_lower_10_per_week(cube):
     # Find lower 10% per week of year for each pixel
     filtered_cloud['time'] = pd.to_datetime(filtered_cloud.time.values)
     ds_weekly = filtered_cloud.groupby('time.week')
-    ds_10th_percentile = ds_weekly.reduce(np.nanquantile, q=0.05, dim='time')
+    ds_percentile = ds_weekly.reduce(np.nanquantile, q=pct, dim='time')
 
     # Remove lower 10% per week of year for each pixel (for S2)
     
-    filtered_ds_10 = xr.zeros_like(filtered_cloud)
+    filtered_ds = xr.zeros_like(filtered_cloud)
     for i, t in enumerate(filtered_cloud['time']):
         # Filter the data for that week
         data =  filtered_cloud.sel(time=t)
-        quant = ds_10th_percentile.sel(week=t.dt.week)
+        quant = ds_percentile.sel(week=t.dt.week)
         above_quant = data.where(data>=quant)
-        filtered_ds_10.loc[dict(time=t)] = above_quant
+        filtered_ds.loc[dict(time=t)] = above_quant
         
-    cube[s2_vars] = filtered_ds_10
+    cube[s2_vars] = filtered_ds
     
     return cube
 
 
-def smooth_s2_timeseries(cube, max_nan):
+def smooth_s2_timeseries(cube, max_nan, remove_pct, loess_frac):
     """
     Apply interpolation and smoothing to S2 timseries
     
     :param cube: xarray with data that needs to be smoothed
     :param max_nan: maximum number of consecutive NaNs allowed. If more, the pixel will not be used/sampled
+    :param pct: percentile (scaled between 0 and 1) under which to drop values per week of year
+    :param frac: the fraction of the data used when estimating each y-value in the LOESS smoothing
     """
     # Filter out clouds and lower 10 percentile
-    cube = remove_lower_10_per_week(cube)
+    cube = remove_lower_pct_per_week(cube, remove_pct)
     print('Cloud cleaning - removed lower 10% per week of yr')
     
     # First check if to interpolate or not
@@ -159,7 +161,7 @@ def smooth_s2_timeseries(cube, max_nan):
                     # Check if should smooth the timeseries for that pixel
                     if cube.sel(lat=lat, lon=lon).to_sample.values:
                         subset = variable.isel(lat=i_lat, lon=i_lon)
-                        smoothed_values = interpolate_loess(subset, cube)
+                        smoothed_values = interpolate_loess(subset, cube, loess_frac)
                         # Replace with smoothed values
                         cube[variable_name].loc[dict(lat=lat, lon=lon)] = smoothed_values
                         
