@@ -52,7 +52,7 @@ class L2NDVILoss(nn.Module):
     def forward(self, preds, batch, current_step = None):
 
         
-        ndvi_targ = batch["target"][0][:, :, self.ndvi_targ_idx,...].squeeze(3) # b t c 
+        ndvi_targ = batch["target"][0][:, :, self.ndvi_targ_idx,...].squeeze(3) # b t c
         ndvi_pred = preds[:,:,self.ndvi_pred_idx, ...].unsqueeze(2) # b t c 
         sum_squared_error = (((ndvi_targ - ndvi_pred))**2).sum(1)  # b c
         mse = sum_squared_error / ndvi_pred.size(1) # b c 

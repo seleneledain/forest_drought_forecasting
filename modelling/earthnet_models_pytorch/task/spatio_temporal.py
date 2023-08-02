@@ -141,7 +141,7 @@ class SpatioTemporalTask(pl.LightningModule):
         
         preds = self(batch) #self(x.float()) #, pred_start = self.context_length, n_preds = self.target_length)  # output model
         loss, logs = self.loss(preds, batch)
-        metric = self.metric(preds, batch["target"][0][:, :, self.hparams["loss"]["ndvi_pred_idx"],...]) # Check that shapes are ok
+        metric = self.metric(preds, batch["target"][0][:, :, self.hparams["loss"]["ndvi_targ_idx"],...]) # Check that shapes are ok
         #logs['val_batch_size'] = torch.tensor(self.hparams.val_batch_size, dtype=torch.float32)
         #logs['loss_val'] = torch.tensor(loss, dtype=torch.float32).clone().detach()
         #self.log_dict(logs)
@@ -192,7 +192,7 @@ class SpatioTemporalTask(pl.LightningModule):
             
             if self.hparams.compute_metric_on_test:
                 ndvi_preds = torch.tensor(ndvi_preds, dtype=torch.float32).unsqueeze(-1)
-                scores.append((str(targ_path), self.metric(ndvi_preds, batch["target"][0][j, :, self.hparams["loss"]["ndvi_pred_idx"],...].unsqueeze(0))))
+                scores.append((str(targ_path), self.metric(ndvi_preds, batch["target"][0][j, :, self.hparams["loss"]["ndvi_targ_idx"],...].unsqueeze(0))))
         self.indiv_test_scores = scores
 
         return

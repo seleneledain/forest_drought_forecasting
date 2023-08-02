@@ -42,8 +42,9 @@ class DroughtDataset(Dataset):
 
         npz = np.load(filepath)
 
-        context = npz["context"].reshape((npz["context"].shape[1],npz["context"].shape[0], 1, 1)) # seq_len, input_size/num features, height, width
-        target =  npz["target"].reshape((npz["target"].shape[1],npz["target"].shape[0], 1, 1))
+        context = npz["context"].transpose().reshape((npz["context"].shape[1],npz["context"].shape[0], 1, 1)) # seq_len, input_size/num features, height, width
+        target = npz["target"].transpose().reshape((npz["target"].shape[1],npz["target"].shape[0], 1, 1)) # seq_len, input_size/num features, height, width
+        
         if self.min_stats is None or self.max_stats is None:
             self.min_stats = np.ones((context.shape[1],))
             self.max_stats = np.zeros((context.shape[1],))
