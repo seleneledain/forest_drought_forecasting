@@ -94,6 +94,12 @@ The format of the data that will be downloaded and the samples that will be crea
 - `target_in_summer`: If True, data samples will be created only if the start date of the target (label) is contained in Jun. 1st- Sep. 1st. Relevant for val/test set.
 
 **How to create dataset**
+
+Downloaded cubes will be saved in `config.root_dir/config.split/cubes/` as `startyear_startmonth_startday_endyear_endmonth_endday_lon_lat_width_height.nc`
+
+Generated samples are saved in `config.root_dir/config.split/` as `startyear_startmonth_startday_endyear_endmonth_endday_lon_lat_width_height_shift.npz`, where context and target data can be accessed with `npz["context"]` and `npz["target"]`.
+
+
 1. Download the required code to generate minicubes: https://github.com/geco-bern/earthnet-minicuber
 2. In `data_downloading.create_dataset.py` add the path to the downloaded repository
 ```
