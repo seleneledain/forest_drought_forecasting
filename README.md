@@ -142,13 +142,17 @@ The scripts are found in `data_downloading/`.
 ```
 python swiss_dem_download.py
 ```
-- The DEM tiles need to be reprojected to a global CRS (EPSG:4326) from local CRS (MN95 NF02). New rasters named `*_reprojected.tiff` will be created. 
+- The DEM tiles need to be reprojected to a global CRS (EPSG:4326) from local CRS (MN95 NF02). New rasters named `*_reprojected.tiff` will be created. The resolution is also changed to 20m through bilinear interpolation.
 ```
 python reproject_dem.py
 ```
 - Create a single DEM raster by mosaicking the (reprojected) tiles together. Ensure that the paths are correct in the script.
 ```
 python mosaic_dem.py
+```
+If you are doing this for a large area (e.g. whole of Switzerland), you might not be able to load all DEM tiles into memory. In this case, mosaicking can be done recursively, by combining groups of files at the time. You can define the number of tile to be grouped together in the `n_sub` variable in `data_downloading/mosaic_dem_recursive.py`. Then run:
+```
+python mosaic_dem_recursive.py
 ```
 
 
