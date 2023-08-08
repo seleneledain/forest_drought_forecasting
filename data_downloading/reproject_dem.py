@@ -1,5 +1,5 @@
 import rasterio
-import fiona
+#import fiona
 import rasterio.mask
 import rasterio.fill
 import json
@@ -29,7 +29,7 @@ except:
     
     
     
-def reproject_raster(
+def reproject_resample_raster(
     raster_file_in,
     raster_file_out=None,
     dst_crs="EPSG:4326",
@@ -37,7 +37,7 @@ def reproject_raster(
     bbox=None,
     width=None,
     height=None,
-    resampling=Resampling.nearest,
+    resampling=Resampling.bilinear,
 ):
 
     """
@@ -103,16 +103,16 @@ def reproject_raster(
 # For folder of files
 import os
 
-FOLDER_PATH = 'downloads/'
-REPROJ_PATH = 'dem/'
+FOLDER_PATH = '/data/scratch/selene/dem/'
+REPROJ_PATH = '/data/scratch/selene/dem_reproj_resamp/'
 
 for file in os.listdir(FOLDER_PATH):
     print(f'Reprojection file {file}...')
     # Create copy to edit (otherwise original input file will be edited)
     source = file
     target = file.split('.tif')[0] + '_reprojected.tiff'
-    shutil.copy(FOLDER_PATH + source, FOLDER_PATH + target)
-    raster_src = FOLDER_PATH + target
+    shutil.copy(FOLDER_PATH + source, REPROJ_PATH + target)
+    raster_src = REPROJ_PATH + target
     raster_reprojected = REPROJ_PATH + file
-    reproject_raster(raster_src, raster_reprojected, 'epsg:4326')
+    reproject_resample_raster(raster_src, raster_reprojected, 'epsg:4326', res=20)
     print('Done')

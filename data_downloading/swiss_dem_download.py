@@ -7,13 +7,12 @@ Selene Ledain
 """
 
 import requests
-from PIL import Image
 import pandas as pd
 
 
 """ VARIABLES """
 URLS_PATH = 'urls_all.txt'
-DOWNLOADS_PATH = 'downloads/dem/'
+DOWNLOADS_PATH = '/data/scratch/selene/dem/'
 
 
 """ DOWNLOAD """
