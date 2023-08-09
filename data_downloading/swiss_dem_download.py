@@ -10,21 +10,35 @@ import requests
 import pandas as pd
 
 
-""" VARIABLES """
-URLS_PATH = 'urls_all.txt'
-DOWNLOADS_PATH = '/data/scratch/selene/dem/'
+def swiss_dem_download(urls_path, downloads_path):
+    """Download DEM tiles from swissAlti3D
 
+    Args:
+        urls_path (str): path to text file containing URLS to download
+        downloads_path (str): path to store downloaded files
+    """
 
-""" DOWNLOAD """
+    data = pd.read_csv(urls_path, header=None)
+    data.columns = ["link"]
 
-data = pd.read_csv(URLS_PATH, header=None)
-data.columns = ["link"]
+    for idx, row in data.iterrows():
+        url = row["link"]
+        print(url)
+        name = url.split('/')[-1].split('\n')[0]
+        print(name)
+        r = requests.get(url)
+        print('Download successful')
+        open(downloads_path + name, "wb").write(r.content)
+        
+    
+if __name__ == '__main__':
+    
+    import argparse
 
-for idx, row in data.iterrows():
-    url = row["link"]
-    print(url)
-    name = url.split('/')[-1].split('\n')[0]
-    print(name)
-    r = requests.get(url)
-    print('Download successful')
-    open(DOWNLOADS_PATH + name, "wb").write(r.content)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--urls_path', type=str, default='urls_all.txt')
+    parser.add_argument('--downloads_path', type=str, default='/data/scratch/selene/dem/')
+
+    args = parser.parse_args()
+    
+    swiss_dem_download(args.urls_path, args.downloads_path)

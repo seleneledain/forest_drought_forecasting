@@ -99,20 +99,36 @@ def reproject_resample_raster(
                 )
 
 
-                
-# For folder of files
-import os
 
-FOLDER_PATH = '/data/scratch/selene/dem/'
-REPROJ_PATH = '/data/scratch/selene/dem_reproj_resamp/'
+def reproject_dem(folder_path, reproj_path):
+    """Reproject DEM tiles and change resolution to 20m
 
-for file in os.listdir(FOLDER_PATH):
-    print(f'Reprojection file {file}...')
-    # Create copy to edit (otherwise original input file will be edited)
-    source = file
-    target = file.split('.tif')[0] + '_reprojected.tiff'
-    shutil.copy(FOLDER_PATH + source, REPROJ_PATH + target)
-    raster_src = REPROJ_PATH + target
-    raster_reprojected = REPROJ_PATH + file
-    reproject_resample_raster(raster_src, raster_reprojected, 'epsg:4326', res=20)
-    print('Done')
+    Args:
+        folder_path (str): path to DEM tiles
+        reproj_path (str): path to store reprojected tiles
+    """
+    
+
+    for file in os.listdir(folder_path):
+        print(f'Reprojection file {file}...')
+        # Create copy to edit (otherwise original input file will be edited)
+        source = file
+        target = file.split('.tif')[0] + '_reprojected.tiff'
+        shutil.copy(folder_path + source, reproj_path + target)
+        raster_src = reproj_path + target
+        raster_reprojected = reproj_path + file
+        reproject_resample_raster(raster_src, raster_reprojected, 'epsg:4326', res=20)
+        print('Done')
+
+
+if __name__ == '__main__':
+    
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--folder_path', type=str, default='/data/scratch/selene/dem/')
+    parser.add_argument('--reproj_path', type=str, default='/data/scratch/selene/dem_reproj_resamp/')
+
+    args = parser.parse_args()
+    
+    reproject_dem(args.folder, args.n_sub, args.output_folder)
