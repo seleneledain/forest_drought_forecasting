@@ -131,4 +131,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     
-    reproject_dem(args.folder, args.n_sub, args.output_folder)
+    reproject_dem(args.folder_path, args.n_sub, args.output_folder)

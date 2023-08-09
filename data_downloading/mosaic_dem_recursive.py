@@ -80,10 +80,10 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--folder', type=str, default="/data/scratch/selene/dem_reproj_resamp/")
+    parser.add_argument('--folder_path', type=str, default="/data/scratch/selene/dem_reproj_resamp/")
     parser.add_argument('--n_sub', type=int, default=1000) 
     parser.add_argument('--output_folder', type=str, default="/data/scratch/selene/static_data/")
 
     args = parser.parse_args()
     
-    mosaic_dem_recursive(args.folder, args.n_sub, args.output_folder)
+    mosaic_dem_recursive(args.folder_path, args.n_sub, args.output_folder)

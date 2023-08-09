@@ -46,5 +46,5 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     
-    mosaic_dem(args.folder, args.output_path)
+    mosaic_dem(args.folder_path, args.output_path)
 
