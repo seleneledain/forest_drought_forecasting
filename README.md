@@ -149,10 +149,13 @@ python reproject_dem.py --folder_path 'path/to/dem/tiles/' --reproj_path 'path/t
 - Create a single DEM raster by mosaicking the (reprojected) tiles together. Ensure that the paths are correct in the script.
 ```
 python mosaic_dem.py --folder_path 'path/to/tiles/to/merge/' --output_path 'path/to/output/raster/'
+<<<<<<< Updated upstream
 ```
 If you are doing this for a large area (e.g. whole of Switzerland), you might not be able to load all DEM tiles into memory. In this case, mosaicking can be done recursively, by combining groups of files at the time. You can define the number of tile to be grouped together in the `n_sub` variable:
 ```
 python mosaic_dem_recursive.py --folder_path 'path/to/tiles/to/merge/' --n_sub 1000 --output_folder 'path/to/output/folder/'
+=======
+>>>>>>> Stashed changes
 ```
 
 
