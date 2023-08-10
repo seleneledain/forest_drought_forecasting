@@ -142,9 +142,9 @@ The scripts are found in `data_downloading/`.
 ```
 python swiss_dem_download.py --urls_path 'urls_all.txt' --downloads_path 'path/to/store/downloads/'
 ```
-- The DEM tiles need to be reprojected to a global CRS (EPSG:4326) from local CRS (MN95 NF02). New rasters named `*_reprojected.tiff` will be created. 
+- The DEM tiles need to be reprojected to a global CRS (EPSG:4326) from local CRS (MN95 NF02). New rasters named `*_reprojected.tiff` will be created. The tiles are reprojected to a 20m resolution by default, but could also be other if edited in the script.
 ```
-python reproject_dem.py --folder_path 'path/to/dem/tiles/' --reproj_path 'path/to/store/reproj/tiles/'
+python reproject_dem.py --folder_path 'path/to/dem/tiles/' --reproj_path 'path/to/store/reproj/tiles/' --res 20
 ```
 - Create a single DEM raster by mosaicking the (reprojected) tiles together. Ensure that the paths are correct in the script.
 ```

@@ -1,5 +1,4 @@
 import rasterio
-#import fiona
 import rasterio.mask
 import rasterio.fill
 import json
@@ -27,6 +26,10 @@ try:
 except:
     import gdal
     
+
+res_conversion = {20: 0.00018,
+                  100: 0.0009,
+                  500: 0.0045}
     
     
 def reproject_resample_raster(
@@ -62,7 +65,9 @@ def reproject_resample_raster(
         bbox = bbox if not bbox is None else src.bounds
         dst_crs = rasterio.crs.CRS.from_string(dst_crs)
 
-        if not res is None:
+        if res is not None:
+            
+            res = res_conversion[res]
 
             transform, width_, height_ = calculate_default_transform(
                 src.crs, dst_crs, src.width, src.height, *bbox, resolution=res
@@ -100,12 +105,13 @@ def reproject_resample_raster(
 
 
 
-def reproject_dem(folder_path, reproj_path):
+def reproject_dem(folder_path, reproj_path, res):
     """Reproject DEM tiles and change resolution to 20m
 
     Args:
         folder_path (str): path to DEM tiles
         reproj_path (str): path to store reprojected tiles
+        res (int): resolution to downsample to among [20, 100, 500]
     """
     
 
@@ -117,7 +123,7 @@ def reproject_dem(folder_path, reproj_path):
         shutil.copy(folder_path + source, reproj_path + target)
         raster_src = reproj_path + target
         raster_reprojected = reproj_path + file
-        reproject_resample_raster(raster_src, raster_reprojected, 'epsg:4326', res=20)
+        reproject_resample_raster(raster_src, raster_reprojected, 'epsg:4326', res=res)
         print('Done')
 
 
@@ -128,7 +134,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--folder_path', type=str, default='/data/scratch/selene/dem/')
     parser.add_argument('--reproj_path', type=str, default='/data/scratch/selene/dem_reproj_resamp/')
+    parser.add_argument('--res', type=int, default=20)
 
     args = parser.parse_args()
     
-    reproject_dem(args.folder_path, args.n_sub, args.output_folder)
+    reproject_dem(args.folder_path, args.reproj_path, args.res)
