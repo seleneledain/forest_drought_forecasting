@@ -16,14 +16,18 @@ import numpy as np
 import random
 
 import sys
-# Add the path to the repository containing the file
-sys.path.insert(0, '/Users/led/Documents/earthnet-minicuber/') # To modify
-# Import the module
-from earthnet_minicuber.minicuber import *
 
-sys.path.append('..')  # Add parent directory to the sys.path
-from data_downloading.cloud_cleaning import *
-from feature_engineering.add_bands import *
+# Get the absolute path of the current script
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Add paths to required modules
+sys.path.insert(0, os.path.join(parent_dir, 'earthnet-minicuber'))
+from earthnet_minicuber.minicuber import *
+sys.path.insert(0, os.path.join(parent_dir, 'data_downloading'))
+from cloud_cleaning import *
+sys.path.insert(0, os.path.join(parent_dir, 'feature_engineering'))
+from add_bands import *
+
 
 
 def save_cube(cube, split, root_dir, lon_lat, raw=False):
@@ -575,3 +579,30 @@ def obtain_context_target_pixels(cube, context, target, split, root_dir, specs, 
 
     return 
 
+
+
+import importlib
+
+if __name__ == '__main__':
+    
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config_path', type=str, default="/home/sledain/data_downloading/config.py")
+
+    args = parser.parse_args()
+    
+    # Load the configuration module dynamically
+    config = importlib.import_module(os.path.splitext(os.path.basename(args.config_path))[0])
+
+    for path in config.coord_list_paths:
+        # Open text file and read coordinates one by one
+        with open(path) as f:
+            lines = f.readlines()
+            for coord in lines:
+                print(f"Downloading cube and generating samples at {coord}")
+                # Change the coordinate in config.specs
+                config.specs["lon_lat"] = (float(coord.split(',')[0]), float(coord.split(',')[1]))
+                # Generate sample for that coordinate
+                generate_samples(config)
+                

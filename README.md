@@ -5,6 +5,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
 
 ```.
 ├── README.md                               > This file contains a description of what is the repository used for and how to use it.
+├── earthnet-minicuber                      > Package for downloading datacubes. https://github.com/geco-bern/earthnet-minicuber
 ├── sampling                                > Forlder for scripts concerning scene sampling in Switzerland.
     ├── rasterise.py                        > Rasterise, upsample and normalise shapefiles to use as masks in sampling.
     ├── sample.py                           > Sampling algorithms.
@@ -13,6 +14,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── swiss_dem_download.py               > Download DEM tiles from swisstopo
     ├── reproject_dem.py                    > Reproject the DEM tiles to CRS EPSG:4326
     ├──  mosaic_dem.py                      > Mosaic the tiles together into one single raster file.
+    ├──  mosaic_dem_recursive.py            > Mosaic the tiles together into one single raster file ina recursive manner (by subgroup, then merging those)
     ├──  swiss_dem_urls                     > Folder containing download URLs by canton.
         ├── *.txt                           > URLs for a given canton.
     ├──  create_dataset.py                  > Generate a dataset of minicubes.
@@ -27,7 +29,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── create_forest_mask.py               > Generate binary forest mask from forest shapefile in Switzerland.
     ├── add_static_data.py                  > Add time-invariant layers to the data cubes.
     ├── add_bands.py                        > Add additional features to the data cube (either computed or using add_static_data.py)
-    ├── feature_list.txt                    > List of locally stored features and their description.
+    ├── bands_info.py                       > Contains paths and descriptions of local static data to add. 
 ```
 
 
@@ -83,15 +85,23 @@ The format of the data that will be downloaded and the samples that will be crea
 - `specs`: Specifications passed to earthnet-minicuber, defining region, time and bands of interest. For more details of the possible cube specifications, check the `earthnet-minicuber` code. 
 - `specs_add_bands`:  Specifications for adding locally stored data (including forest mask). The data will be added in the same resolution, projection and within the same bounds as the existing data in the minicube. There are two types of features that can be added to the minicube.
     - temporal: bands computed using the raw data in the cube, among ['NDVI']
-    - static/local features: include topographic, vegetation and soil features. The possible features that can be added and their meaning are detailed in `feature_engineering/feature_list.txt`.
+    - static/local features: include topographic, vegetation and soil features. The possible features that can be added and their meaning are detailed in `feature_engineering/bands_info.py`. Add paths and descriptions there.
+- `bands_to_drop`: list of bands to remove from final pixel timeseries.
 - `root_dir`: Where generated data should be stored.
 - `split`: train/validation/test
 - `context`: Number of context frames
 - `target`: Number of target frames
 - `shift`: Shift between Sentinel-2 and ERA5. ERA5 will be shifted n steps forward with respect to Sentinel-2, but the timestamps used for naming files are those of Sentinel-2.
 - `cloud_cleaning`: maximum number of consecutive missing values (in NDVI timeseries) for which cloud cleaning will be performed. If > cloud_cleaning, the pixel wil not be used as a data sample. If 0/None no cloud cleaning is done.
-- `normalisation`: If True, compute min/max for each band in the training set
+- `normalisation`: If True, compute min/max for each band in the training set.
+- `remove_pct`: In cloud cleaning, remove lower x % of values per week of year (provide the percent as decimal between 0 and 1).
+- `loess_frac`: Fraction of data to consider in timeseries when applying LOESS smoothing.
 - `target_in_summer`: If True, data samples will be created only if the start date of the target (label) is contained in Jun. 1st- Sep. 1st. Relevant for val/test set.
+- `drought_labels`: use a drought mask to sample pixels 
+- `forest_thresh`: minimum fraction of pixel covered by forest for sampling 
+- `drought_thresh`:  minimum fraction of pixel covered by drought label for sampling 
+- `pixs_per_scene`: optional. Limit to number of pixels to be sampled in a scene to generate model samples.
+
 
 **How to create dataset**
 
@@ -100,32 +110,12 @@ Downloaded cubes will be saved in `config.root_dir/config.split/cubes/` as `star
 Generated samples are saved in `config.root_dir/config.split/` as `startyear_startmonth_startday_endyear_endmonth_endday_lon_lat_width_height_shift.npz`, where context and target data can be accessed with `npz["context"]` and `npz["target"]`.
 
 
-1. Download the required code to generate minicubes: https://github.com/geco-bern/earthnet-minicuber
-2. In `data_downloading.create_dataset.py` add the path to the downloaded repository
-```
-import sys
-# Add the path to the repository containing the file
-sys.path.insert(0, 'Path_to_code/earthnet-minicuber/')
-# Import the module
-from earthnet_minicuber.minicuber import *
-```
+1. Download the required code to generate minicubes: https://github.com/geco-bern/earthnet-minicuber. Ideally, place this repository as suggested in the Repository Structure.
 3. Also edit the dictionaries in `feature_engineering/add_bands.py` and `feature_engineering/add_static_data.py` to include all of you filenames and path to local features you may have.
 4. Edit `data_downloading/config.py`
 5. Launch the dataset creation
 ```
-from data_downloading.create_dataset import *
-import data_downloading.config as config
-
-for path in config.coord_list_paths:
-    # Open text file and read coordinates one by one
-    with open(path) as f:
-        lines = f.readlines()
-        for coord in lines:
-            print(f"Downloading cube and generating samples at {coord}")
-            # Change the coordinate in config.specs
-            config.specs["lon_lat"] = (float(coord.split(',')[0]), float(coord.split(',')[1]))
-            # Generate sample for that coordinate
-            generate_samples(config)
+python data_downloading/create_dataset.py --config_path /path/to/config/file/
 ```
 
 ### 1.2 Digital Elevation Model (DEM)
