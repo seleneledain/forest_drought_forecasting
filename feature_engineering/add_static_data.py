@@ -21,8 +21,10 @@ import numpy as np
 import geopandas as gpd
 from shapely.geometry import box
 from rasterio import features
+from bands_info import BANDS_DESCRIPTION, dict_static_features
 
 
+"""
 BANDS_DESCRIPTION = {
     "CLAY0_5": "Clay content [%] 0-5 cm",
     "CLAY100_200": "Clay content [%] 100-200 cm",
@@ -68,16 +70,20 @@ BANDS_DESCRIPTION = {
     "DEM": "Digital elevation model",
     "DROUGHT_MASK": "Occurence of drought event in pixel",
 }
-
+"""
+    
 def get_attrs_for_band(band, provider):
 
         attrs = {}
         attrs["provider"] = provider #"Sentinel 2"
-        attrs["interpolation_type"] = "linear" # if forest mask, nearest?
+        if provider == 'Sentinel 2':
+            attrs["interpolation_type"] = "linear"
+        else:
+            attrs["interpolation_type"] = "nearest"
         attrs["description"] = BANDS_DESCRIPTION[band]
-
-
-        return attrs
+        
+        return
+        
     
 def get_raster_resolution(raster_file):
 
@@ -142,7 +148,7 @@ def get_raster_crs(raster_file):
 
     return crs
 
-def match_raster_to_target(input_file, target_file, target_crs="epsg:4326", resampling_method="bilinear"):
+def match_raster_to_target(input_file, target_file, target_crs="epsg:4326", resampling_method="nearest"):
     """
     Matches an input raster to a target raster and returns a NumPy array.
     :param input_file: path to input raster file
@@ -195,6 +201,7 @@ def match_raster_to_target(input_file, target_file, target_crs="epsg:4326", resa
 
 
 
+"""
 dict_static_features = {
     "CLAY0_5": "ton-final-0_5-rf.tif", 
     "CLAY100_200": "ton-final-100_200-rf.tif",
@@ -239,9 +246,10 @@ dict_static_features = {
     "PH5_15": "ph-calc2-5_15-rf.tif",  
     "PH60_100": "ph-calc2-60_100-rf.tif"   
 }
+"""
 
 
-def match_raster_to_minicube(input_file, minicube, target_crs="epsg:4326", resampling_method="bilinear"):
+def match_raster_to_minicube(input_file, minicube, target_crs="epsg:4326", resampling_method="nearest"):
     """
     Matches an input raster to a target raster and returns a NumPy array.
     :param input_file: path to input raster file
@@ -297,7 +305,7 @@ def add_static_to_minicube(list_features, static_dir, minicube, target_crs="epsg
     :param static_dir: directory where static features are stored.
     :param minicube: 
     :param target_crs: CRS to convert the data to.
-    :param resampling_method: GDAL resampling method when changing data resolution.
+    :param resampling_method: GDAL resampling method when changing data resolution. Nearest neighbor by default
     
     :return minicube: list of feature arrays in the order of the list of features
     """
@@ -305,7 +313,8 @@ def add_static_to_minicube(list_features, static_dir, minicube, target_crs="epsg
     list_features_paths = [os.path.join(static_dir, dict_static_features[f]) for f in list_features]
     
     for i, feat in enumerate(list_features_paths):
-        tmp_arr = match_raster_to_minicube(feat, minicube, target_crs="epsg:4326", resampling_method="bilinear")
+        # Resampling method depends on file
+        tmp_arr = match_raster_to_minicube(feat, minicube, target_crs="epsg:4326", resampling_method="nearest")
 
         # Create a new xarray data array with the time-invariant array
         tmp_ds = xr.DataArray(tmp_arr,

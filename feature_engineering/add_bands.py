@@ -4,11 +4,11 @@ Add features that cannot be obtained online (are stored locally or need to be co
 Author: Selene Ledain
 Date: June 9th, 2023
 """
-#import sys
-#sys.path.append('..') 
-from feature_engineering.add_static_data import *
 
+from add_static_data import *
+from bands_info import BANDS_DESCRIPTION, dict_static_features
 
+"""
 BANDS_DESCRIPTION = {
     "CLAY0_5": "Clay content [%] 0-5 cm",
     "CLAY100_200": "Clay content [%] 100-200 cm",
@@ -55,12 +55,16 @@ BANDS_DESCRIPTION = {
     "NDVI": "Normalized Difference Vegetation Index",
     "NDWI": "Normalized Difference Water Index"
 }
+"""
 
 def get_attrs_for_band(band, provider):
 
         attrs = {}
         attrs["provider"] = provider #"Sentinel 2"
-        attrs["interpolation_type"] = "linear" # if forest mask, nearest?
+        if provider == 'Sentinel 2':
+            attrs["interpolation_type"] = "linear"
+        else:
+            attrs["interpolation_type"] = "nearest"
         attrs["description"] = BANDS_DESCRIPTION[band]
 
 
