@@ -171,20 +171,25 @@ Relevant data includes [Name, (repository)]:
 
 ### 2.1 Topographic features
 
-Create features from a DEM. Multiple DEMs at different resolutions can be used, features will be computed at different resolutions then matched to a reference (such that all final tiff files have same resolution and shape although representing different data). Resampling is done using nearest interpolation method (pixel splitting).
+Features can be derived from a DEM. Multiple DEMs at different resolutions can be used, meaning that these features will be computed at different resolutions. 
 
-Supported features are slope, apsect (will automatically generate northing and easting), ruggedness index, curvature, terrain wetness index. These are cmputed using the WhiteboxTools package. Additional features can be computed by adding functions to the `feature_engineer.py` script. For more information on WhiteboxTools and its functions: https://www.whiteboxgeo.com/manual/wbt_book/preface.html
+To obtain DEMs at different resolutions than the 20m one you can use the following code. First, any missing values will be filled in using the rasterio.fill algorithm (https://rasterio.readthedocs.io/en/latest/api/rasterio.fill.html). Then the DEM is resampled to the resolutions you input in meters. If you desire other resolutions, modify the start of the script to provide other options (you need to provide a conversion between meters and degrees in EPSG:4326). 
+```
+python feature_engineering/dem_smooth_resample.py --dem_path /path/to/dem/ --smooth_dem_path /path/output/filled/dem --resolutions 100 500 --output_folder /path/store/resampled/dems/
+```
 
-**How to use**:
-- Edit and call the script in terminal as 
+Because the resolution of the other data in the minicube is likely higher than the downsampled DEMs, a resampling is done when combining these layers to the rest. We use nearest interpolation method to simply "split" are larger pixel into smaller ones, so that we can conserve the properties of the lower resolution DEMs (done automatically in dataset creation scripts). When generating other topographic features, this step is already included in the code. 
+
+**How to generate topographic features**
+Supported features are slope, apsect (will automatically generate northing and easting), ruggedness index, curvature, terrain wetness index. These are computed using the WhiteboxTools package. Additional features can be computed by adding functions to the `feauture_engineering/feature_engineer.py` script. For more information on WhiteboxTools and its functions: https://www.whiteboxgeo.com/manual/wbt_book/preface.html.
+
+To generate the feature, edit the following variables in `feauture_engineering/run_topo_feats.py`:
+- `list_paths`: list of DEM files from which features should be generated
+- `target`: all generated features will be matched (in final resolution and shape) to this DEM tiff (usually the original DEM)
+- `feat_list`: list of feature to compute among ['slope', 'aspect', 'rugg', 'curv', 'twi']
+- `out_path`: path to store resulting raster files. Ideally, store these in the same folder as the static features.
+- `list_suffix`: optional. If using multiple DEMs, provide a list of suffixes to differentiate the features generated from various DEMs. This suffix will be added to features' files names (for example the resolution). The order of the suffixes should respect the order in `list_paths`.
+Then run:
 ```
-python feature_engineering/run_topo_feats.py
+python feature_engineering/run_topo_feats.py 
 ```
-- For examples, including using multiple DEMs at different resolutions, refer to the `topo_features.ipynb` example notebook in the `feature_engineering` folder.
-- Ensure that the paths used in the script/notebook for feature generation relative to the script/notebook.
-- Provide
-  - `list_paths`: list of paths to DEM(s). List will be of length 1 if using only 1 DEM
-  - `target`: all generated features will be matched (in final resolution and shape) to this DEM tiff (usually the original DEM)
-  - `feat_list`: list of features among [`slope`, `aspect`, `rugg`, `curv`, `twi`]
-  - `out_path`: folder where to store generated features. Ideally, store these in the same folder as the vegetation/soil static features.
-  - `list_suffix`: if using multiple DEMs, provide a list of suffixes to differentiate the features generated from various DEMs

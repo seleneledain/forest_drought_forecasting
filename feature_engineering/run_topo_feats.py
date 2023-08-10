@@ -7,13 +7,14 @@ Authors:    Selene Ledain (selene.ledain@ibm.com)
 
 from create_dem_feat import *
 
-list_paths = ['/dccstor/cimf/drought_impact/downloads/DEM_ch/17/46.85_7_47.45_7.7/Drought-DEM Switzerland-01_01_2022T00_00_00.tiff']
-target = '/dccstor/cimf/drought_impact/downloads/DEM_ch/21/46.907_7.137_47.407_7.637/Drought-DEM Switzerland-01_01_2022T00_00_00.tiff'
+list_paths = ['/data/scratch/selene/static_data/DEM_smooth.tif', '/data/scratch/selene/static_data/DEM_100.tif', '/data/scratch/selene/static_data/DEM_500.tif']
+target = '/data/scratch/selene/static_data/DEM_smooth.tif'
 feat_list = ['slope', 'aspect', 'rugg', 'curv', 'twi']
-out_path = '/dccstor/cimf/drought_impact/downloads/DEM_ch/21/46.907_7.137_47.407_7.637/'
+out_path = '/data/scratch/selene/static_data/'
+list_suffix = ['20', '100', '500']
 
 print('Creating topographic features...')
 
-create_from_multiple_dems(list_paths=list_paths, target=target, feat_list=feat_list, out_path=out_path, list_suffix=None)
+create_from_multiple_dems(list_paths=list_paths, target=target, feat_list=feat_list, out_path=out_path, list_suffix=list_suffix)
 
 print('Done!')
