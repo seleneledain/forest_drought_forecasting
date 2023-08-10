@@ -140,19 +140,19 @@ The scripts are found in `data_downloading/`.
 - Copy the URLs and save them to a `.txt` file. The URLs for the DEM at 2 m resolution (in 2022) is provided (`urls_all.txt`). The URLs have also been seperated by canton and are provided in `data_downloading/swiss_dem/swiss_dem_urls/`.
 - Using the `swiss_dem_download.py` script, provide the path to this `.txt` file and the path to where you want the DEM tiles to be downloaded. Run the script from terminal by calling
 ```
-python swiss_dem_download.py --urls_path 'urls_all.txt' --downloads_path 'path/to/store/downloads/'
+python data_downloading/swiss_dem_download.py --urls_path 'urls_all.txt' --downloads_path 'path/to/store/downloads/'
 ```
 - The DEM tiles need to be reprojected to a global CRS (EPSG:4326) from local CRS (MN95 NF02). New rasters named `*_reprojected.tiff` will be created. The tiles are reprojected to a 20m resolution by default, but could also be other if edited in the script.
 ```
-python reproject_dem.py --folder_path 'path/to/dem/tiles/' --reproj_path 'path/to/store/reproj/tiles/' --res 20
+python data_downloading/reproject_dem.py --folder_path 'path/to/dem/tiles/' --reproj_path 'path/to/store/reproj/tiles/' --res 20
 ```
 - Create a single DEM raster by mosaicking the (reprojected) tiles together. Ensure that the paths are correct in the script.
 ```
-python mosaic_dem.py --folder_path 'path/to/tiles/to/merge/' --output_path 'path/to/output/raster/'
+python data_downloading/mosaic_dem.py --folder_path 'path/to/tiles/to/merge/' --output_path 'path/to/output/raster/'
 ```
 If you are doing this for a large area (e.g. whole of Switzerland), you might not be able to load all DEM tiles into memory. In this case, mosaicking can be done recursively, by combining groups of files at the time. You can define the number of tile to be grouped together in the `n_sub` variable:
 ```
-python mosaic_dem_recursive.py --folder_path 'path/to/tiles/to/merge/' --n_sub 1000 --output_folder 'path/to/output/folder/'
+python data_downloading/mosaic_dem_recursive.py --folder_path 'path/to/tiles/to/merge/' --n_sub 1000 --output_folder 'path/to/output/folder/'
 ```
 
 
@@ -178,7 +178,7 @@ Supported features are slope, apsect (will automatically generate northing and e
 **How to use**:
 - Edit and call the script in terminal as 
 ```
-python run_topo_feats.py
+python feature_engineering/run_topo_feats.py
 ```
 - For examples, including using multiple DEMs at different resolutions, refer to the `topo_features.ipynb` example notebook in the `feature_engineering` folder.
 - Ensure that the paths used in the script/notebook for feature generation relative to the script/notebook.
