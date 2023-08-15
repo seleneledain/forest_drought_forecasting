@@ -175,7 +175,6 @@ def match_raster_to_minicube(input_file, minicube, target_crs="epsg:4326", resam
     transform = rasterio.transform.from_bounds(minX, minY, maxX, maxY, output_width, output_height)
     
     input_dataset = gdal.Open(input_file)
-    print('size check', input_file, input_dataset.RasterXSize)
     if input_dataset is None:
         print("Failed to open input dataset.")
         return None
