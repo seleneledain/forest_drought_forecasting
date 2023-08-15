@@ -83,7 +83,7 @@ def save_context_target(cube_context, cube_target, file_name, split, root_dir):
     
     context_array = cube_context.to_array().values
     target_array = cube_target.to_array().values
-    np.savez(os.path.join(path_to_save,file_name), context=context_array, target=target_array) 
+    np.savez_compressed(os.path.join(path_to_save,file_name), context=context_array, target=target_array) 
     
     
 def obtain_context_target_cubes(cube, context, target, split, root_dir, specs, shift=0):
