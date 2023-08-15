@@ -24,54 +24,6 @@ from rasterio import features
 from bands_info import BANDS_DESCRIPTION, dict_static_features
 
 
-"""
-BANDS_DESCRIPTION = {
-    "CLAY0_5": "Clay content [%] 0-5 cm",
-    "CLAY100_200": "Clay content [%] 100-200 cm",
-    "CLAY15_30": "Clay content 15-30 [%] cm",
-    "CLAY30_60": "Clay content 30-60 [%] cm",
-    "CLAY5_15": "Clay content 5-15 [%] cm", 
-    "CLAY60_100": "Clay content 60-100 [%] cm",
-    "FED0_5": "Fine earth density [g/cm3] 0-5 cm", 
-    "FED100_200": "Fine earth density [g/cm3] 100-200 cm",
-    "FED15_30": "Fine earth density [g/cm3] 15-30 cm", 
-    "FED30_60": "Fine earth density [g/cm3] 30-60 cm", 
-    "FED5_15": "Fine earth density [g/cm3] 5-15 cm",
-    "FED60_100": "Fine earth density [g/cm3] 60-100 cm",
-    "FC": "Forest composition",
-    "FH": "Vegetation height in meters",
-    "FOREST_MASK" : "Binary forest mask",
-    "GRAV0_5": "Gravel content [%] 0-5 cm", 
-    "GRAV100_200": "Gravel content [%] 0-5 cm", 
-    "GRAV15_30": "Gravel content [%] 15-30 cm", 
-    "GRAV30_60": "Gravel content [%] 30-60 cm", 
-    "GRAV5_15": "Gravel content [%] 5-15 cm", 
-    "GRAV60_100": "Gravel content [%] 60-100 cm", 
-    "SAND0_5": "Sand content [%] 0-5 cm",
-    "SAND100_200": "Sand content [%] 100-200 cm", 
-    "SAND15_30": "Sand content [%] 15-30 cm", 
-    "SAND30_60": "Sand content [%] 30-60 cm", 
-    "SAND5_15": "Sand content [%] 5-15 cm",   
-    "SAND60_100": "Sand content [%] 60-100 cm", 
-    "SDEP": "Soil depth [cm]",
-    "CARB0_5": "Organic carbon content [g/kg] 0-5 cm",
-    "CARB100_200": "Organic carbon content [g/kg] 100-200 cm",
-    "CARB15_30": "Organic carbon content [g/kg] 15-30 cm",
-    "CARB30_60": "Organic carbon content [g/kg] 30-60 cm",
-    "CARB5_15": "Organic carbon content [g/kg] 5-15 cm",
-    "CARB60_100": "Organic carbon content [g/kg] 60-100 cm",
-    "PH0_5": "pH 0-5 cm",  
-    "PH100_200": "pH 100-200 cm", 
-    "PH15_30": "pH 15-30 cm",
-    "PH30_60": "pH 30-60 cm", 
-    "PH5_15": "pH 5-15 cm", 
-    "PH60_100": "pH 60-100 cm",
-    "NDVI": "Normalized Difference Vegetation Index",
-    "DEM": "Digital elevation model",
-    "DROUGHT_MASK": "Occurence of drought event in pixel",
-}
-"""
-    
 def get_attrs_for_band(band, provider):
 
         attrs = {}
@@ -82,7 +34,7 @@ def get_attrs_for_band(band, provider):
             attrs["interpolation_type"] = "nearest"
         attrs["description"] = BANDS_DESCRIPTION[band]
         
-        return
+        return attrs
         
     
 def get_raster_resolution(raster_file):
@@ -200,55 +152,6 @@ def match_raster_to_target(input_file, target_file, target_crs="epsg:4326", resa
 
 
 
-
-"""
-dict_static_features = {
-    "CLAY0_5": "ton-final-0_5-rf.tif", 
-    "CLAY100_200": "ton-final-100_200-rf.tif",
-    "CLAY15_30": "ton-final-15_30-rf.tif", 
-    "CLAY30_60": "ton-final-30_60-rf.tif",
-    "CLAY5_15": "ton-final-5_15-rf.tif", 
-    "CLAY60_100": "ton-final-60_100-rf.tif",
-    "DEM": "DEM.tif",
-    "DROUGHT_MASK": "polys_brun.tif",
-    "FED0_5": "trd-feinerde-final-0_5-rf.tif", 
-    "FED100_200": "trd-feinerde-final-100_200-rf.tif", 
-    "FED15_30": "trd-feinerde-final-15_30-rf.tif",  
-    "FED30_60": "trd-feinerde-final-30_60-rf.tif",  
-    "FED5_15": "trd-feinerde-final-5_15-rf.tif",  
-    "FED60_100": "trd-feinerde-final-60_100-rf.tif", 
-    "FC": "Waldmischungsgrad_2018_10m_2056.tif", 
-    "FH": "Vegetationshoehenmodell_2021_10m_LFI_ID164_19_LV95.tif", 
-    "FOREST_MASK" : "forest_mask_reproj.tif",
-    "GRAV0_5": "skelettgehalt-0_5-rf.tif",  
-    "GRAV100_200": "skelettgehalt-100_200-rf.tif",  
-    "GRAV15_30": "skelettgehalt-15_30-rf.tif",  
-    "GRAV30_60": "skelettgehalt-30_60-rf.tif",  
-    "GRAV5_15": "skelettgehalt-5_15-rf.tif", 
-    "GRAV60_100": "skelettgehalt-60_100-rf.tif", 
-    "SAND0_5": "sand-final-0_5-rf.tif", 
-    "SAND100_200": "sand-final-100_200-rf.tif",  
-    "SAND15_30": "sand-final-15_30-rf.tif",  
-    "SAND30_60": "sand-final-30_60-rf.tif", 
-    "SAND5_15": "sand-final-5_15-rf.tif",  
-    "SAND60_100": "sand-final-60_100-rf.tif", 
-    "SDEP": "mittlere-gruendigkeit-p-rf.tif", 
-    "CARB0_5": "corg-gehalt_final-0_5-rf.tif", 
-    "CARB100_200": "corg-gehalt_final-100_200-rf.tif",  
-    "CARB15_30": "corg-gehalt_final-15_30-rf.tif",  
-    "CARB30_60": "corg-gehalt_final-30_60-rf.tif",  
-    "CARB5_15": "corg-gehalt_final-5_15-rf.tif",  
-    "CARB60_100": "corg-gehalt_final-60_100-rf.tif", 
-    "PH0_5": "ph-calc2-0_5-rf.tif",  
-    "PH100_200": "ph-calc2-100_200-rf.tif",  
-    "PH15_30": "ph-calc2-0_5-rf.tif", 
-    "PH30_60": "ph-calc2-30_60-rf.tif", 
-    "PH5_15": "ph-calc2-5_15-rf.tif",  
-    "PH60_100": "ph-calc2-60_100-rf.tif"   
-}
-"""
-
-
 def match_raster_to_minicube(input_file, minicube, target_crs="epsg:4326", resampling_method="nearest"):
     """
     Matches an input raster to a target raster and returns a NumPy array.
@@ -272,6 +175,7 @@ def match_raster_to_minicube(input_file, minicube, target_crs="epsg:4326", resam
     transform = rasterio.transform.from_bounds(minX, minY, maxX, maxY, output_width, output_height)
     
     input_dataset = gdal.Open(input_file)
+    print('size check', input_file, input_dataset.RasterXSize)
     if input_dataset is None:
         print("Failed to open input dataset.")
         return None
@@ -313,6 +217,7 @@ def add_static_to_minicube(list_features, static_dir, minicube, target_crs="epsg
     list_features_paths = [os.path.join(static_dir, dict_static_features[f]) for f in list_features]
     
     for i, feat in enumerate(list_features_paths):
+        
         # Resampling method depends on file
         tmp_arr = match_raster_to_minicube(feat, minicube, target_crs="epsg:4326", resampling_method="nearest")
 
