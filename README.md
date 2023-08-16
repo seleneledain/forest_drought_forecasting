@@ -48,8 +48,8 @@ Reminder: by sampling N scenes you will be sampling > N data samples. For each p
 ```
 from sampling.sample import *
 
-forest_mask_256 = ... # Path to forest mask with 2.56km resolution
-drought_labels_256 = ... # Path to drought mask with 2.56km resolution
+forest_mask_256 = ... # Path to forest mask with 2.56km resolution (EPSG:4326)
+drought_labels_256 = ... # Path to drought mask with 2.56km resolution (EPSG:4326)
 thresh_drought = 0 # Sample scenes with > thresh_drought
 thresh_forest = 0.4  # Sample scenes with > thresh_forest
 output_file_path = 'coords_drought.txt' # Define the output text file path
@@ -62,8 +62,8 @@ sample_drought(forest_mask_256, drought_labels_256, thresh_drought, thresh_fores
 ```
 from sampling.sample import *
 
-forest_mask_256 = ... # Path to forest mask with 2.56km resolution
-drought_labels_256 = ... # Path to drought mask with 2.56km resolution
+forest_mask_256 = ... # Path to forest mask with 2.56km resolution (EPSG:4326)
+drought_labels_256 = ... # Path to drought mask with 2.56km resolution (EPSG:4326)
 thresh_forest = 0.4  # Sample scenes with > thresh_forest
 output_file_path = 'coords_negative_drought.txt' # Define the output text file path
 N = 100 # Number of scenes to sample
