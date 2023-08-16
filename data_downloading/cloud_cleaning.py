@@ -115,7 +115,7 @@ def remove_lower_pct_per_week(cube, pct):
     ds_weekly = filtered_cloud.groupby('time.week')
     ds_percentile = ds_weekly.reduce(np.nanquantile, q=pct, dim='time')
 
-    # Remove lower 10% per week of year for each pixel (for S2)
+    # Remove lower x % per week of year for each pixel (for S2)
     
     filtered_ds = xr.zeros_like(filtered_cloud)
     for i, t in enumerate(filtered_cloud['time']):
@@ -141,7 +141,7 @@ def smooth_s2_timeseries(cube, max_nan, remove_pct, loess_frac):
     """
     # Filter out clouds and lower 10 percentile
     cube = remove_lower_pct_per_week(cube, remove_pct)
-    print('Cloud cleaning - removed lower 10% per week of yr')
+    print(f'Cloud cleaning - removed lower {remove_pct}% per week of yr')
     
     # First check if to interpolate or not
     cube = check_if_interp(cube, max_nan)

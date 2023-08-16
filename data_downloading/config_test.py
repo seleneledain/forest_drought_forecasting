@@ -59,4 +59,5 @@ drought_labels = False
 forest_thresh = 0.8 
 drought_thresh = 0
 pixs_per_scene = 10
+gen_samples = False
 

@@ -222,10 +222,19 @@ def generate_samples(config):
     cube_name = f'{start_yr}_{start_month}*{end_yr}_{end_month}*{lon}_{lat}_{width}_{height}.nc'
     search_cube = glob.glob(os.path.join(config.root_dir, config.split, 'cubes', cube_name))
 
-    # Check if cube already exists
+    # Check if cube already exists, load cleaned cube
     if search_cube:
         # Load cube 
-        cube = xr.open_dataset(os.path.join(config.root_dir,search_cube[0]), engine='netcdf4')        
+        cube = xr.open_dataset(os.path.join(config.root_dir,search_cube[0]), engine='netcdf4')  
+        
+        if config.gen_samples: # Regenerate samples
+            # Split to context/target pairs and save
+            if config.target_in_summer:
+                obtain_context_target_pixels_summer(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.pixs_per_scene, config.shift, config.drought_labels, config.forest_thresh, config.drought_thresh)
+            else:
+                obtain_context_target_pixels(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.pixs_per_scene, config.shift, config.drought_labels, config.forest_thresh, config.drought_thresh)
+            print(f"Created {config.split} samples from cube!")
+                  
     else:
         # Generate cube given specs and specs_add_band
         emc = Minicuber(config.specs)
@@ -271,14 +280,13 @@ def generate_samples(config):
             print('Computed normalisation statistics')
             
         
-    # Split to context/target pairs and save
-    if config.target_in_summer:
-        obtain_context_target_pixels_summer(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.pixs_per_scene, config.shift, config.drought_labels, config.forest_thresh, config.drought_thresh)
-    else:
-        obtain_context_target_pixels(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.pixs_per_scene, config.shift, config.drought_labels, config.forest_thresh, config.drought_thresh)
-   
-    print(f"Created {config.split} samples from cube!")
-        
+        # Split to context/target pairs and save
+        if config.target_in_summer:
+            obtain_context_target_pixels_summer(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.pixs_per_scene, config.shift, config.drought_labels, config.forest_thresh, config.drought_thresh)
+        else:
+            obtain_context_target_pixels(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.pixs_per_scene, config.shift, config.drought_labels, config.forest_thresh, config.drought_thresh)
+        print(f"Created {config.split} samples from cube!")
+    
     return
 
 
