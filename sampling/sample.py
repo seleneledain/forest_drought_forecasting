@@ -137,16 +137,18 @@ def sample_negatives(forest_mask_256, drought_labels_256, thresh_forest, output_
     # Read and process 1/6th of the raster at a time
     for i in range(3):
         for j in range(2):
-            # Calculate the starting position of the current section
+            # Calculate the starting position of the current section            
             start_x = i * segment_width
             start_y = j * segment_height
+            ulx_new = ulx + i * segment_width * pixel_width
+            uly_new = uly + j * segment_height * pixel_height
 
             # Read the section of the raster
             forest_data = forest_dataset.ReadAsArray(start_x, start_y, segment_width, segment_height)
             drought_data = drought_dataset.ReadAsArray(start_x, start_y, segment_width, segment_height)
 
             # Get coordinates that satisfy condition
-            coord_list = get_coords_forest_drought_neg(forest_data, drought_data, thresh_forest, ulx+start_x, uly+start_y, pixel_width, pixel_height)
+            coord_list = get_coords_forest_drought_neg(forest_data, drought_data, thresh_forest, ulx_new, uly_new, pixel_width, pixel_height)
             # If more than enough, randomly pick N/6
             if len(coord_list)>N/6:
                 coord_list = random.sample(coord_list, int(np.ceil(N/6)))
