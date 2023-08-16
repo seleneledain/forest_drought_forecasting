@@ -103,6 +103,7 @@ The format of the data that will be downloaded and the samples that will be crea
 - `forest_thresh`: minimum fraction of pixel covered by forest for sampling 
 - `drought_thresh`:  minimum fraction of pixel covered by drought label for sampling 
 - `pixs_per_scene`: optional. Limit to number of pixels to be sampled in a scene to generate model samples.
+- `gen_samples`: if True, will generatee samples even if cube exists already (could overwrite existing samples).
 
 
 **How to create dataset**
