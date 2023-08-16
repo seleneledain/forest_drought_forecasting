@@ -206,6 +206,7 @@ def generate_samples(config):
     :param drought_labels: If to use drought mask for sampling pixels
     :param forest_thresh: threshold of forest to consider to sample pixel
     :param drought_thresh: threshold of drought to consider to sample pixel
+    :param gen_samples: generate samples if cube already exists
     """
 
     
@@ -234,6 +235,8 @@ def generate_samples(config):
             else:
                 obtain_context_target_pixels(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.pixs_per_scene, config.shift, config.drought_labels, config.forest_thresh, config.drought_thresh)
             print(f"Created {config.split} samples from cube!")
+        else:
+            print('Samples already created!')
                   
     else:
         # Generate cube given specs and specs_add_band
