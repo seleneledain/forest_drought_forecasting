@@ -58,6 +58,6 @@ target_in_summer = True
 drought_labels = False 
 forest_thresh = 0.8 
 drought_thresh = 0
-pixs_per_scene = 10
+pixs_per_scene = 100
 gen_samples = False
 

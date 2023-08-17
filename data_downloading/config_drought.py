@@ -56,8 +56,8 @@ loess_frac = 0.07 # Percent of data to use for LOESS smoothing
 # Samples criteria
 target_in_summer = True
 drought_labels = True 
-forest_thresh = 0 
-drought_thresh = 0
-pixs_per_scene = 50
+forest_thresh = 0  # take any pixel with drought label
+drought_thresh = 0.01
+pixs_per_scene = 1000
 gen_samples = False
 
