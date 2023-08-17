@@ -508,6 +508,7 @@ def extract_pixel_timeseries(cube_context, cube_target, shift, split, root_dir, 
         # Initialize a counter for successful samples and tested coords
         successful_samples = 0
         trials = 0
+        selected_combinations = set() # store tested combinations
 
         # Loop until the desired number of samples is achieved
         while successful_samples < pixs_per_scene and trials < len(cube_context.lat)*len(cube_context.lon):
@@ -517,20 +518,25 @@ def extract_pixel_timeseries(cube_context, cube_target, shift, split, root_dir, 
             lat = cube_context.lat[random_lat_index]
             lon = cube_context.lon[random_lon_index]
             trials += 1
+            
+            # Check if the combination has already been selected
+            if (random_lat_index, random_lon_index) not in selected_combinations:
+                # Add the combination to the set of selected combinations
+                selected_combinations.add((random_lat_index, random_lon_index))
 
-            check_to_sample = cube_context.sel(lat=lat, lon=lon).to_sample.values
-            check_forest_mask = cube_context.sel(lat=lat, lon=lon).FOREST_MASK.values
-            if drought_labels:
-                check_drought_mask = cube_context.sel(lat=lat, lon=lon).DROUGHT_MASK.values
-            else:
-                check_drought_mask = 1
+                check_to_sample = cube_context.sel(lat=lat, lon=lon).to_sample.values
+                check_forest_mask = cube_context.sel(lat=lat, lon=lon).FOREST_MASK.values
+                if drought_labels:
+                    check_drought_mask = cube_context.sel(lat=lat, lon=lon).DROUGHT_MASK.values
+                else:
+                    check_drought_mask = 1
 
-            if check_to_sample and check_forest_mask > forest_thresh and check_drought_mask > drought_thresh:
-                pixel_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon.values}_{lat.values}_{width}_{height}_{shift}.npz'
-                save_context_target(cube_context.sel(lat=lat, lon=lon).drop_vars(bands_to_drop), cube_target.sel(lat=lat, lon=lon).drop_vars(bands_to_drop), pixel_name, split, root_dir)
-                successful_samples += 1
+                if check_to_sample and check_forest_mask > forest_thresh and check_drought_mask > drought_thresh:
+                    pixel_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon.values}_{lat.values}_{width}_{height}_{shift}.npz'
+                    save_context_target(cube_context.sel(lat=lat, lon=lon).drop_vars(bands_to_drop), cube_target.sel(lat=lat, lon=lon).drop_vars(bands_to_drop), pixel_name, split, root_dir)
+                    successful_samples += 1
 
-                            
+                                
             
 def obtain_context_target_pixels(cube, context, target, split, root_dir, specs, bands_to_drop, pixs_per_scene, shift=0, forest_thresh=0.5, drought_thresh=0):
     """
