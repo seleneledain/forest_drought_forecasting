@@ -229,6 +229,7 @@ def generate_samples(config):
         cube = xr.open_dataset(os.path.join(config.root_dir,search_cube[0]), engine='netcdf4')  
         
         if config.gen_samples: # Regenerate samples
+            print('Regenerating samples from loaded cube...')
             # Split to context/target pairs and save
             if config.target_in_summer:
                 obtain_context_target_pixels_summer(cube, config.context, config.target, config.split, config.root_dir, config.specs, config.bands_to_drop, config.pixs_per_scene, config.shift, config.drought_labels, config.forest_thresh, config.drought_thresh)
