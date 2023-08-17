@@ -64,8 +64,6 @@ conda activate drought
 python scripts/train.py configs/drought/drought_lstm/base.yaml
 ```
 
-It trains the model as specified in the config. Validation is also done, by using a fraction of the test set (HOW TO CHANGE VAL SIZE).
-
 To view results/training progress:
 ```
 conda activate drought
