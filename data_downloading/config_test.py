@@ -40,7 +40,7 @@ bands_to_drop = ["s2_mask", "s2_avail", "s2_SCL", "to_sample", "FOREST_MASK", "D
 
 # Where to save data
 root_dir = '/data/scratch/selene/' # Path_to_local_data/selene/Desktop/Unibe/New code/'
-split = 'test_neg'
+split = 'neg'
 
 # Sample format
 context = 54 # 9 months 5-daily 

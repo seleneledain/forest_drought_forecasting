@@ -40,7 +40,7 @@ bands_to_drop = ["s2_mask", "s2_avail", "s2_SCL", "to_sample", "FOREST_MASK", "D
 
 # Where to save data
 root_dir = '/data/scratch/selene/'
-split = 'train_drought'
+split = 'drought'
 
 # Format of data sample
 context = 54 # 9 months 5-daily 
