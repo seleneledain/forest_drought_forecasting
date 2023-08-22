@@ -74,7 +74,7 @@ sample_negatives(forest_mask_256, drought_labels_256, thresh_forest, output_file
 
 ## 1. Data Downloading and Dataset creation
 
-Make sure that you have gone through step 2. Feature Engineering and that your local feature are ready to be added to the dataset!
+Make sure that you have gone through step 2. Feature Engineering and that your local features are ready to be added to the dataset!
 
 ### 1.1 Create datasets from minicubes
 
@@ -186,3 +186,12 @@ Then run:
 ```
 python feature_engineering/run_topo_feats.py 
 ```
+
+## 3. Modelling
+
+Forecast NDVI n steps ahead using the data generated in the previous steps.\
+A `README.md` is provided in this folder for more details on training and testing models.
+
+
+
+
