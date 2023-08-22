@@ -83,7 +83,7 @@ To this cube, custom/local data can be added. Cloud removal on Sentinel-2 data c
 
 **Setup**\
 The format of the data that will be downloaded and the samples that will be created are set up in the `data_downloading/config.py`. The parameters to modify are:
-- `coord_list_paths`: list of paths to text files from which to read coordinates (generated duirng sampling).
+- `coord_list_paths`: list of paths to text files from which to read coordinates (generated during sampling).
 - `specs`: Specifications passed to earthnet-minicuber, defining region, time and bands of interest. For more details of the possible cube specifications, check the `earthnet-minicuber` code. 
 - `specs_add_bands`:  Specifications for adding locally stored data (including forest mask). The data will be added in the same resolution, projection and within the same bounds as the existing data in the minicube. There are two types of features that can be added to the minicube.
     - temporal: bands computed using the raw data in the cube, among ['NDVI']
@@ -94,16 +94,16 @@ The format of the data that will be downloaded and the samples that will be crea
 - `context`: Number of context frames
 - `target`: Number of target frames
 - `shift`: Shift between Sentinel-2 and ERA5. ERA5 will be shifted n steps forward with respect to Sentinel-2, but the timestamps used for naming files are those of Sentinel-2.
-- `cloud_cleaning`: maximum number of consecutive missing values (in NDVI timeseries) for which cloud cleaning will be performed. If > cloud_cleaning, the pixel wil not be used as a data sample. If 0/None no cloud cleaning is done.
+- `cloud_cleaning`: maximum number of consecutive missing values (in NDVI timeseries) for which cloud cleaning will be performed. If > cloud_cleaning, the pixel will not be used as a data sample. If 0/None no cloud cleaning is done.
 - `normalisation`: If True, compute min/max for each band in the training set.
-- `remove_pct`: In cloud cleaning, remove lower x % of values per week of year (provide the percent as decimal between 0 and 1).
+- `remove_pct`: In cloud cleaning, remove lower x% of values per week of year (provide the percent as decimal between 0 and 1).
 - `loess_frac`: Fraction of data to consider in timeseries when applying LOESS smoothing.
 - `target_in_summer`: If True, data samples will be created only if the start date of the target (label) is contained in Jun. 1st- Sep. 1st. Relevant for val/test set.
 - `drought_labels`: use a drought mask to sample pixels 
 - `forest_thresh`: minimum fraction of pixel covered by forest for sampling 
 - `drought_thresh`:  minimum fraction of pixel covered by drought label for sampling 
 - `pixs_per_scene`: optional. Limit to number of pixels to be sampled in a scene to generate model samples.
-- `gen_samples`: if True, will generatee samples even if cube exists already (could overwrite existing samples).
+- `gen_samples`: if True, will generate samples even if cube exists already (could overwrite existing samples).
 
 
 **How to create dataset**
@@ -111,7 +111,6 @@ The format of the data that will be downloaded and the samples that will be crea
 Downloaded cubes will be saved in `config.root_dir/config.split/cubes/` as `startyear_startmonth_startday_endyear_endmonth_endday_lon_lat_width_height.nc`
 
 Generated samples are saved in `config.root_dir/config.split/` as `startyear_startmonth_startday_endyear_endmonth_endday_lon_lat_width_height_shift.npz`, where context and target data can be accessed with `npz["context"]` and `npz["target"]`.
-
 
 1. Download the required code to generate minicubes: https://github.com/geco-bern/earthnet-minicuber. Ideally, place this repository as suggested in the Repository Structure.
 3. Also edit the dictionaries in `feature_engineering/add_bands.py` and `feature_engineering/add_static_data.py` to include all of you filenames and path to local features you may have.
@@ -135,7 +134,7 @@ The scripts are found in `data_downloading/`.
 ```
 python data_downloading/swiss_dem_download.py --urls_path 'urls_all.txt' --downloads_path 'path/to/store/downloads/'
 ```
-- The DEM tiles need to be reprojected to a global CRS (EPSG:4326) from local CRS (MN95 NF02). New rasters named `*_reprojected.tiff` will be created. The tiles are reprojected to a 20m resolution by default, but could also be other if edited in the script.
+- The DEM tiles need to be reprojected to a global CRS (EPSG:4326) from local CRS (MN95 NF02). New rasters named `*_reprojected.tiff` will be created. The tiles are reprojected to a 20 m resolution by default, but could also be other if edited in the script.
 ```
 python data_downloading/reproject_dem.py --folder_path 'path/to/dem/tiles/' --reproj_path 'path/to/store/reproj/tiles/' --res 20
 ```
@@ -143,7 +142,7 @@ python data_downloading/reproject_dem.py --folder_path 'path/to/dem/tiles/' --re
 ```
 python data_downloading/mosaic_dem.py --folder_path 'path/to/tiles/to/merge/' --output_path 'path/to/output/raster/'
 ```
-If you are doing this for a large area (e.g. whole of Switzerland), you might not be able to load all DEM tiles into memory. In this case, mosaicking can be done recursively, by combining groups of files at the time. You can define the number of tile to be grouped together in the `n_sub` variable:
+If you are doing this for a large area (e.g. whole of Switzerland), you might not be able to load all DEM tiles into memory. In this case, mosaicking can be done recursively, by combining groups of files at the time. You can define the number of tiles to be grouped together in the `n_sub` variable:
 ```
 python data_downloading/mosaic_dem_recursive.py --folder_path 'path/to/tiles/to/merge/' --n_sub 1000 --output_folder 'path/to/output/folder/'
 ```
@@ -166,7 +165,7 @@ Relevant data includes [Name, (repository)]:
 
 Features can be derived from a DEM. Multiple DEMs at different resolutions can be used, meaning that these features will be computed at different resolutions. 
 
-To obtain DEMs at different resolutions than the 20m one you can use the following code. First, any missing values will be filled in using the rasterio.fill algorithm (https://rasterio.readthedocs.io/en/latest/api/rasterio.fill.html). Then the DEM is resampled to the resolutions you input in meters. If you desire other resolutions, modify the start of the script to provide other options (you need to provide a conversion between meters and degrees in EPSG:4326). 
+To obtain DEMs at different resolutions than the 20m one you can use the following code. First, any missing values will be filled in using the `rasterio.fill` algorithm (https://rasterio.readthedocs.io/en/latest/api/rasterio.fill.html). Then the DEM is resampled to the resolutions you input in meters. If you desire other resolutions, modify the start of the script to provide other options (you need to provide a conversion between meters and degrees in EPSG:4326). 
 ```
 python feature_engineering/dem_smooth_resample.py --dem_path /path/to/dem/ --smooth_dem_path /path/output/filled/dem --resolutions 100 500 --output_folder /path/store/resampled/dems/
 ```
@@ -191,7 +190,3 @@ python feature_engineering/run_topo_feats.py
 
 Forecast NDVI n steps ahead using the data generated in the previous steps.\
 A `README.md` is provided in this folder for more details on training and testing models.
-
-
-
-
