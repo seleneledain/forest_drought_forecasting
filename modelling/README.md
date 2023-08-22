@@ -15,7 +15,7 @@ There are three main components:
 
 ## Requirements
 
-We recommend using Anaconda for managing dependencies of this library. The following bash commands create a suitable environment. Please note the PyTorch installation requirements for your system, see (https://pytorch.org/) - esp. cudatoolkit might have to be installed with a different cuda version.
+We recommend using Anaconda for managing dependencies of this library. The following bash commands create a suitable environment (named drought by default). Please note the PyTorch installation requirements for your system, see (https://pytorch.org/) - esp. cudatoolkit might have to be installed with a different cuda version.
 
 ```
 conda env create -f environment.yml

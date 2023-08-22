@@ -37,7 +37,9 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
 
 ## Requirements
 
-1. In the root directory containing the challenges, run `conda env create -f environment.yaml` to create the environment (named minicuber by default).
+We recommend using Anaconda for managing dependencies of this library. The following bash commands create a suitable environment.
+
+1. In the root directory, run `conda env create -f environment.yaml` to create the environment (named minicuber by default).
 2. Run `conda activate minicuber` to activate the environment.
 
    
