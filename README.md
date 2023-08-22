@@ -32,7 +32,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── add_bands.py                        > Add additional features to the data cube (either computed or using add_static_data.py)
     ├── bands_info.py                       > Contains paths and descriptions of local static data to add.
 ├── modelling                               > Folder for modelling forest drought impacts.
-    ├── REAMDE.md                           > Contains instructions on how to launch model training and testing. 
+    ├── README.md                           > Contains instructions on how to launch model training and testing. 
 ```
 
 ## Requirements
