@@ -5,6 +5,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
 
 ```.
 ├── README.md                               > This file contains a description of what is the repository used for and how to use it.
+├── environment.yaml                        > Packages and requirements
 ├── earthnet-minicuber                      > Package for downloading datacubes. https://github.com/geco-bern/earthnet-minicuber
 ├── sampling                                > Forlder for scripts concerning scene sampling in Switzerland.
     ├── rasterise.py                        > Rasterise, upsample and normalise shapefiles to use as masks in sampling.
@@ -31,10 +32,15 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── add_bands.py                        > Add additional features to the data cube (either computed or using add_static_data.py)
     ├── bands_info.py                       > Contains paths and descriptions of local static data to add.
 ├── modelling                               > Folder for modelling forest drought impacts.
-    ├── REAMDE.md                           > Contains instructions on how to launch model training and testing.  
+    ├── REAMDE.md                           > Contains instructions on how to launch model training and testing. 
 ```
 
+## Requirements
 
+1. In the root directory containing the challenges, run `conda env create -f environment.yaml` to create the environment (named minicuber by default).
+2. Run `conda activate minicuber` to activate the environment.
+
+   
 ## 0. Scene Sampling
 
 The first step is to identify locations around Switzerland. In particular, we collect the center coordinates of scenes of 2.56km x 2.56 km that will then be called during Data Downloading.
