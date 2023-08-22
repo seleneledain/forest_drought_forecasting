@@ -421,7 +421,7 @@ def obtain_context_target_pixels_summer(cube, context, target, split, root_dir, 
         target_start = [ts for i, ts in enumerate(target_start) if i not in none_indices]
         
         if not len(context_start) or not len(target_start):
-            print('Available time frame not enough for context generation. Skipping year as target.')
+            print(f'Available time frame not enough for context generation. Skipping {yr} as target.')
             continue
         else:
             last_context_start_date_idx = [idx for idx, t in enumerate(all_cube_times) if t==context_start[-1]][0]
