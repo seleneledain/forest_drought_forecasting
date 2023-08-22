@@ -15,7 +15,8 @@ Checkpointer:
 
 Trainer:
     devices: 1 #6
-    strategy: 'ddp'
+    #accelerator: 'auto' #automatically chooses between gpu and cpu
+    strategy: 'ddp' #if this is on, no need to specifiy accelerator in pl.Trainer()
     #deterministic: True
     log_every_n_steps: 32
     #profiler: 'advanced'
@@ -32,21 +33,22 @@ Trainer:
     #overfit_batches: 0.0
   
 Data:
-    base_dir: "/Users/selene/Desktop/New code/" #where data is stored
+    base_dir: "/data/scratch/selene/" #where data is stored
     test_track: "iid"
-    train_batch_size: 4 #96
-    val_batch_size: 4
-    test_batch_size: 4 #96
-    num_workers: 8
+    train_batch_size: 16 #96
+    val_batch_size: 16
+    test_batch_size: 16 #96
+    num_workers: 4
+    val_pct: 0.10
     #dl_cloudmask: True
 
 Task:
     loss:
         name: "L2NDVILoss"
         ndvi_pred_idx: 0
-        ndvi_targ_idx: 13
-    context_length: 1 #54 (9 months)
-    target_length: 1 #18 (3 months)
+        ndvi_targ_idx: 5
+    context_length: 54 #(9 months)
+    target_length: 18 #(3 months)
     optimization:
         optimizer:
             - 
@@ -65,7 +67,7 @@ Task:
     compute_metric_on_test: True
 
 Model:
-    input_dim: 16 #number of input features
+    input_dim: 74 #number of input features
     hidden_dim: 32 #number of nodes in hidden layers
     num_layers: 2 #number of hidden layers
-    target_length: 1
+    target_length: 18

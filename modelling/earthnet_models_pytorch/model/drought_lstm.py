@@ -46,8 +46,8 @@ class LSTM_oneshot(nn.Module):
         x = torch.squeeze(x, (3,4))
 
         # Initialize the hidden state and cell state with zeros
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim, device=x.device)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim, device=x.device)
 
         # Store the predictions in a list
         predictions  = torch.zeros(x.size(0), self.target_length, self.output_dim)

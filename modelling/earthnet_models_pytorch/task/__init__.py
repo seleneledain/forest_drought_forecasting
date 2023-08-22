@@ -13,8 +13,8 @@ TASKS = {
 TRACK_INFO = {
     "drought": {
         "iid": {
-            "context_length": 1, #54 (9 months)
-            "target_length": 1 #18 (3 months)
+            "context_length": 54, # (9 months)
+            "target_length": 18, #(3 months)
         }
     }
 }

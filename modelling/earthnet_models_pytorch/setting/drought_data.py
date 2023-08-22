@@ -137,7 +137,7 @@ class DroughtDataModule(pl.LightningDataModule):
     def setup(self, stage: str = None):
 
         if stage == 'fit' or stage is None:
-            data_corpus = DroughtDataset(self.base_dir/"train")
+            data_corpus = DroughtDataset(self.base_dir/"neg")
             
             val_size = int(self.hparams.val_pct * len(data_corpus))
             train_size = len(data_corpus) - val_size

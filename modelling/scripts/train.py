@@ -67,8 +67,7 @@ def train_model(setting_dict: dict, setting_file: str = None):
     if "profiler" in trainer_dict:
         trainer_dict["profiler"] = pl.profiler.AdvancedProfiler(output_filename="curr_profile")
 
-    #trainer_dict["strategy"]=DDPStrategy(find_unused_parameters=False)
-    
+    trainer_dict["strategy"]=DDPStrategy(find_unused_parameters=False)
     trainer = pl.Trainer(logger = logger, callbacks = [checkpoint_callback], **trainer_dict) 
     
     dm.setup("fit")

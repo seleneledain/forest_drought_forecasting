@@ -46,7 +46,7 @@ class RootMeanSquaredError(Metric):
         '''Any code needed to update the state given any inputs to the metric.'''
 
         # Reformat: targets should only contain NDVI!! Provide batch["target"][0][:,:,ndvi_idx,...]
-        targs = targs.squeeze(3) # b t c
+        targs = targs.squeeze(3).to(preds.device) # b t c
         
         # MSE computation    
         sum_squared_error = (((targs - preds))**2).sum((1,2))  # b c
