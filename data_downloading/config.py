@@ -1,6 +1,6 @@
 # Configuration file for minicube generation
 
-coord_list_paths = ['/data/scratch/selene/sampling_rasters/coords_sample_negative.txt'] 
+coord_list_paths = ['/data/scratch/selene/sampling_rasters/coords_negative.txt'] 
 
 specs = {
     "lon_lat": None,

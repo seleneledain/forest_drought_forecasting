@@ -84,10 +84,10 @@ def get_coords_forest_drought_neg(forest_array, drought_array, thresh, ulx, uly,
     
     coord_list = []
     # Iterate over the array and write the coordinates of the pixels with values greater than 0.4 to the output file
-    for row in range(forest_array.shape[1]):
-        for col in range(forest_array.shape[0]):
-            value_forest = forest_array[col][row]
-            value_drought = drought_array[col][row]
+    for row in range(forest_array.shape[0]):
+        for col in range(forest_array.shape[1]):
+            value_forest = forest_array[row][col]
+            value_drought = drought_array[row][col]
             if value_forest > thresh and value_drought == 0:
                 # Calculate the center coordinates of the pixel
                 x = ulx + (col + 0.5) * pixel_width
@@ -105,7 +105,7 @@ def sample_negatives(forest_mask_256, drought_labels_256, thresh_forest, output_
     :param drought_labels_256: path to drought mask at 2.56 km resolution
     :param thresh_forest: threshold for forest 
     :param N: number of samples to get
-    :param output_file_path: where output text file should be written
+    :param output_file: where output text file should be written
     """
     
     with open(output_file, 'w') as file:
