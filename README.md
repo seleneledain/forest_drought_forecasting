@@ -11,16 +11,20 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── rasterise.py                        > Rasterise, upsample and normalise shapefiles to use as masks in sampling.
     ├── sample.py                           > Sampling algorithms.
     ├── sampling.ipynb                      > Example notebook.
+    ├── sampled_coordinates                 > Folder containing text files of the sampled coordinates.
+    ├── generated_cubes                     > Folder containing text files of the downloaded cubes.
 ├── data_downloading                        > Folder for scripts concering downloading of data.
     ├── swiss_dem_download.py               > Download DEM tiles from swisstopo
     ├── reproject_dem.py                    > Reproject the DEM tiles to CRS EPSG:4326
-    ├──  mosaic_dem.py                      > Mosaic the tiles together into one single raster file.
-    ├──  mosaic_dem_recursive.py            > Mosaic the tiles together into one single raster file ina recursive manner (by subgroup, then merging those)
+    ├── mosaic_dem.py                       > Mosaic the tiles together into one single raster file.
+    ├── mosaic_dem_recursive.py             > Mosaic the tiles together into one single raster file ina recursive manner (by subgroup, then merging those)
     ├──  swiss_dem_urls                     > Folder containing download URLs by canton.
         ├── *.txt                           > URLs for a given canton.
-    ├──  create_dataset.py                  > Generate a dataset of minicubes.
-    ├──  cloud_cleaning.py                  > Remove and replace cloud coevred values in Sentinel-2 data.
-    ├──  config.py                          > Configuration file for dataset creation.
+    ├── create_dataset.py                   > Generate a dataset of minicubes.
+    ├── cloud_cleaning.py                   > Remove and replace cloud coevred values in Sentinel-2 data.
+    ├── config.py                           > Configuration file for dataset creation.
+    ├── delete_cubes_samples.py             > Delete cubes and its samples from a list of coordinates.
+    ├── delete_samples_bycoords.py          > Delete cubes and its samples from a lat/lon bouds.
 ├── feature_engineering                     > Folder containing scripts for the creation of topographic features from DEM(s).
     ├── create_dem_feat.py                  > Functions to create multiple features from DEM(s) and adjust generated raster files.
     ├── feature_engineer.py                 > Functions to extract individual properties from DEM (based on WhiteboxTools package).
