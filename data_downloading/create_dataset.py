@@ -177,8 +177,8 @@ def save_min_max(cube, split, root_dir, specs):
     start_month = cube.time.to_index().date[0].month
     start_day = cube.time.to_index().date[0].day
     end_yr = cube.time.to_index().date[-1].year
-    end_month = cube.time.to_index().date[-1].year
-    end_day = cube.time.to_index().date[-1].year
+    end_month = cube.time.to_index().date[-1].month
+    end_day = cube.time.to_index().date[-1].day
     cube_stat_name = f'{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}'
     # Save values
     path_to_save = os.path.join(root_dir, split, cube_stat_name)
