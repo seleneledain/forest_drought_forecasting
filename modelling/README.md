@@ -47,6 +47,8 @@ conda activate drought
         ├── tune.py                         > Perform hyperparameter grid search.
         ├── test.py                         > Inference on a model.
         ├── debug.py                        > Short training loop to check if model works.
+├── compute_baseline.py                     > Compute baseline scores on a test set.
+├── plot_ndvi_preds.py                      > Plot the predictions vs ground truth NDVI timeseries.
 ```
 
 
@@ -72,7 +74,6 @@ tensorboard --logdir your_exp
 ```
 
 
-
 ## Tune
 
 Hyperparameter tuning can be performed by providing lists of values for each model parameter. These should be defined in `configs/params.yaml`. Each combination will be trained using a grid search. The best configuration will be written automatically to `configs/best.yaml` which is ready to use for training.
@@ -94,12 +95,30 @@ To test a model you have trained.
 ```
 python scripts/test.py --setting configs/drought/drought_lstm/base.yaml --checkpoint experiments/drought/drought-lstm/drought_lstm/full_train/checkpoints/last.ckpt --track track_name --pred_dir 'path_to_store_predictions’
 ```
+where `pred_dir` will be created if it doesn't exist yet.
 
 To view results/testing progress:
 ```
 conda activate drought
 cd /path_to/experiments/drought/drought-lstm/drought_lstm/
 tensorboard --logdir your_exp
+```
+
+**Plotting predictions**
+Predictions on the test set are saved. You can plot them using the following script which will create plots of the predicted NDVI timeseries, the ground truth and the mean NDVI of the input/context tensor.\
+You can also plot only preidctions in a specific bounding box and/or time range (the time range to provide shouldbe that of the context data which is used to name the files.)
+```
+python plot_ndvi_preds.py --truth_path /path/to/test/set --pred_path /path/to/test/predictions --coord_range minX minY maxX maxY --time_range yyyy-mm-dd yyyy-mm-dd --ndvi_idx 5
+```
+
+**Computing baseline scores**
+You can compute the MSE and RMSE on the test set considering some baseline scenarios:
+- The model predicts the mean of the context NDVI timeseries for all output dates ("mean basleine")
+- The model predicts the last value of the context NDVI timeseries for all output dates ("persistence baseline")
+
+Running the following script will print out the MSE and RMSE of these baseline scenarios. `ndvi_idx` is the position of the NDVI variable in the tensors.
+```
+python compute_baseline.py --data_path /path/to/test/set  --ndvi_idx 5
 ```
 
 
