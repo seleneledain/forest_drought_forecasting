@@ -1,8 +1,8 @@
 name: drought
 channels:
-  - anaconda
   - pytorch
   - nvidia
+  - anaconda
   - conda-forge
   - defaults
 dependencies:
@@ -22,9 +22,9 @@ dependencies:
   - brotlipy=0.7.0=py311h5eee18b_1002
   - bzip2=1.0.8=h7b6447c_0
   - c-ares=1.19.0=h5eee18b_0
-  - ca-certificates=2023.7.22=hbcca054_0
+  - ca-certificates=2023.01.10=h06a4308_0
   - cachetools=5.3.1=pyhd8ed1ab_0
-  - certifi=2023.7.22=pyhd8ed1ab_0
+  - certifi=2020.6.20=pyhd3eb1b0_3
   - cffi=1.15.1=py311h5eee18b_3
   - charset-normalizer=2.0.4=pyhd3eb1b0_0
   - click=8.1.7=unix_pyh707e725_0
@@ -63,6 +63,7 @@ dependencies:
   - importlib-metadata=6.8.0=pyha770c72_0
   - intel-openmp=2023.1.0=hdb19cb5_46305
   - jinja2=3.1.2=py311h06a4308_0
+  - joblib=1.2.0=py311h06a4308_0
   - jpeg=9e=h5eee18b_1
   - kiwisolver=1.4.4=py311h6a678d5_0
   - krb5=1.20.1=h143b758_1
@@ -85,6 +86,8 @@ dependencies:
   - libevent=2.1.12=hdbd6064_1
   - libffi=3.4.4=h6a678d5_0
   - libgcc-ng=11.2.0=h1234567_1
+  - libgfortran-ng=11.2.0=h00389a5_1
+  - libgfortran5=11.2.0=h1234567_1
   - libgomp=11.2.0=h1234567_1
   - libiconv=1.16=h7f8727e_2
   - libidn2=2.3.4=h5eee18b_0
@@ -130,7 +133,7 @@ dependencies:
   - numpy-base=1.25.2=py311hf175353_0
   - oauthlib=3.2.2=pyhd8ed1ab_0
   - openh264=2.1.1=h4ff587b_0
-  - openssl=3.0.10=h7f8727e_0
+  - openssl=3.0.10=h7f8727e_2
   - packaging=23.1=pyhd8ed1ab_0
   - pandas=2.0.3=py311ha02d727_0
   - pcre=8.45=h9c3ff4c_0
@@ -164,6 +167,8 @@ dependencies:
   - requests=2.31.0=py311h06a4308_0
   - requests-oauthlib=1.3.1=pyhd8ed1ab_0
   - rsa=4.9=pyhd8ed1ab_0
+  - scikit-learn=1.2.2=py311h6a678d5_1
+  - scipy=1.11.1=py311h08b1b3b_0
   - setuptools=68.0.0=py311h06a4308_0
   - sip=6.6.2=py311h6a678d5_0
   - six=1.16.0=pyh6c4a22f_0
@@ -172,6 +177,7 @@ dependencies:
   - tbb=2021.8.0=hdb19cb5_0
   - tensorboard=2.14.0=pyhd8ed1ab_0
   - tensorboard-data-server=0.7.0=py311h52d8a92_0
+  - threadpoolctl=2.2.0=pyh0d69192_0
   - tk=8.6.12=h1ccaba5_0
   - toml=0.10.2=pyhd8ed1ab_0
   - torchaudio=2.0.2=py311_cu118
