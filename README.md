@@ -135,9 +135,9 @@ python data_downloading/create_dataset.py --config_path /path/to/config/file/
 
 The image below shows the center coordinates for the cubes that were downloaded and from which samples were generated in `sampling/generated_cubes`. In this case, 'drought' (samples generated from cubes containing drought labels) and 'negative' (samples generated from cubes NOT containing drought labels) datasets were created using two different configuration files.
 
-<div style="text-align: center;">
-<img src="images/created_cubes.png" alt="Generated minicubes" width="700", style="display: inline-block;">
-</div>
+<p align="center">
+<img src="images/created_cubes.png" alt="Generated minicubes" width="700">
+</p>
 
 **How to split data into train and test**
 
