@@ -25,6 +25,7 @@ Forecasting of forest drought impacts in Switzerland from satellite imagery, wea
     ├── config.py                           > Configuration file for dataset creation.
     ├── delete_cubes_samples.py             > Delete cubes and its samples from a list of coordinates.
     ├── delete_samples_bycoords.py          > Delete cubes and its samples from a lat/lon bouds.
+    ├── split_train_test.py                 > Organise generated samples into train/test sets.
 ├── feature_engineering                     > Folder containing scripts for the creation of topographic features from DEM(s).
     ├── create_dem_feat.py                  > Functions to create multiple features from DEM(s) and adjust generated raster files.
     ├── feature_engineer.py                 > Functions to extract individual properties from DEM (based on WhiteboxTools package).
@@ -122,7 +123,7 @@ The format of the data that will be downloaded and the samples that will be crea
 
 Downloaded cubes will be saved in `config.root_dir/config.split/cubes/` as `startyear_startmonth_startday_endyear_endmonth_endday_lon_lat_width_height.nc`
 
-Generated samples are saved in `config.root_dir/config.split/` as `startyear_startmonth_startday_endyear_endmonth_endday_lon_lat_width_height_shift.npz`, where context and target data can be accessed with `npz["context"]` and `npz["target"]`.
+Generated samples are saved in `config.root_dir/config.split/` as `startyear_startmonth_startday_endyear_endmonth_endday_lon_lat_width_height_shift.npz`, where context and target data can be accessed with `npz["context"]` and `npz["target"]`. The start date and end date are those of the context tensor.
 
 1. Download the required code to generate minicubes: https://github.com/geco-bern/earthnet-minicuber. Ideally, place this repository as suggested in the Repository Structure.
 3. Also edit the dictionaries in `feature_engineering/add_bands.py` and `feature_engineering/add_static_data.py` to include all of you filenames and path to local features you may have.
@@ -131,6 +132,22 @@ Generated samples are saved in `config.root_dir/config.split/` as `startyear_sta
 ```
 python data_downloading/create_dataset.py --config_path /path/to/config/file/
 ```
+
+The imaage below shows the center coordinates for the cubes that were downloaded and from which samples were generated in `sampling/generated_cubes`. In this case, 'drought' (samples generated from cubes containing drought labels) and 'negative' (samples generated from cubes NOT containing drought labels) datasets were created using two different configuration files.
+
+![Generated minicubes](images/created_cubes.png)
+
+
+**How to split data into train and test**
+
+You can reshuffle the data you created into new train and test folders. Running this script will change the folder structure, so be careful to have backups if needed!
+
+Provide the paths to where your data samples are stored, and the bounding box (and/or time range) for the train set. Anything outside these bounds (and/or time range) will be usd for the test set. All cubes will be moved to train. Train and test will have same .npy normalisation stats, and any usused stats will be saved in `train/cubes`.
+
+```
+python data_downloading/split_train_test.py --data_paths path/to/dataset1 path/to/dataset2 --dir_path folder/to/store/new/splits --coord_range minX minY maxX maxY 
+```
+
 
 ### 1.2 Digital Elevation Model (DEM)
 
