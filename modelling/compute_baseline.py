@@ -32,10 +32,10 @@ def compute_baseline_score(data_path, ndvi_idx):
         total_mse_pers += mean_squared_error(target, [context_pers]*len(target))
         
     # Compute final metrics
-    print(f'MSE with mean prediction (mean baseline metric): {total_mse_mean/len(data_path)}')
-    print(f'RMSE with mean prediction (mean baseline metric): {np.sqrt(total_mse_mean/len(data_path))}')
-    print(f'MSE with persistence prediction (persistence baseline metric): {total_mse_pers/len(data_path)}')
-    print(f'RMSE with persistence prediction (persistence baseline metric): {np.sqrt(total_mse_pers/len(data_path))}')    
+    print(f'MSE with mean prediction (mean baseline metric): {total_mse_mean/len(files)}')
+    print(f'RMSE with mean prediction (mean baseline metric): {np.sqrt(total_mse_mean/len(files))}')
+    print(f'MSE with persistence prediction (persistence baseline metric): {total_mse_pers/len(files)}')
+    print(f'RMSE with persistence prediction (persistence baseline metric): {np.sqrt(total_mse_pers/len(files))}')    
     
     return
 
@@ -52,6 +52,6 @@ if __name__ == '__main__':
     
     compute_baseline_score(args.data_path, args.ndvi_idx)
     
-    # python modelling/compute_baseline.py --data_path /data/scratch/selene/test/iid  --ndvi_idx 5 
+    # python modelling/compute_baseline.py --data_path /data/scratch/selene/test/ood  --ndvi_idx 5 
 
                 
