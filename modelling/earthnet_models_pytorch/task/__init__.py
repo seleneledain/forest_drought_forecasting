@@ -15,6 +15,10 @@ TRACK_INFO = {
         "iid": {
             "context_length": 54, # (9 months)
             "target_length": 18, #(3 months)
+        },
+        "ood": { #out of domain
+            "context_length": 54, # (9 months)
+            "target_length": 18, #(3 months)
         }
     }
 }

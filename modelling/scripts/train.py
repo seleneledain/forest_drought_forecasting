@@ -52,7 +52,6 @@ def train_model(setting_dict: dict, setting_file: str = None):
     # Logger
     logger = pl.loggers.TensorBoardLogger(**setting_dict["Logger"])
 
-
     if setting_file is not None and type(logger.experiment).__name__ != "DummyExperiment":
         print("Copying setting yaml.")
         os.makedirs(logger.log_dir, exist_ok = True)
