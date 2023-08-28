@@ -47,8 +47,9 @@ conda activate drought
         ├── tune.py                         > Perform hyperparameter grid search.
         ├── test.py                         > Inference on a model.
         ├── debug.py                        > Short training loop to check if model works.
-├── compute_baseline.py                     > Compute baseline scores on a test set.
-├── plot_ndvi_preds.py                      > Plot the predictions vs ground truth NDVI timeseries.
+├── analysis                                > Extra scripts and functionalities for plotting and analysis
+    ├──compute_baseline.py                  > Compute baseline scores on a test set.
+    ├── plot_ndvi_preds.py                  > Plot the predictions vs ground truth NDVI timeseries.
 ```
 
 
@@ -72,6 +73,8 @@ conda activate drought
 cd /path_to/experiments/drought/drought-lstm/drought_lstm/
 tensorboard --logdir your_exp
 ```
+
+By default, the tracked score is RMSE (at each prediction step), which can be interpreted as the difference in NDVI between the target and predicted value.
 
 
 ## Tune
