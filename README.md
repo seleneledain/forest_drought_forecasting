@@ -137,8 +137,8 @@ The image below shows the center coordinates for the cubes that were downloaded 
 
 <p align="center">
 <img src="images/created_cubes.png" alt="Generated minicubes" width="700">
-Sampled cube coordinates, generating 180GB and 27GB of negative and drought samples respectively.
 </p>
+<p align="center"><em>Caption: Sampled cube coordinates, generating 180GB and 27GB of negative and drought samples respectively.</em></p>
 
 **How to split data into train and test**
 
