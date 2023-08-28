@@ -5,6 +5,6 @@ Seed: 42
 Setting: "drought"
 
 Model:
-    #hidden_dim: [32, 64]
-    num_layers: [2, 4]
+    hidden_dim: [32, 64, 128]
+    num_layers: [2, 4, 8, 10]
 
