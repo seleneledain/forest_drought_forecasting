@@ -67,7 +67,7 @@ conda activate drought
 python scripts/train.py configs/drought/drought_lstm/base.yaml
 ```
 
-To view results/training progress:
+**To view results/training progress with tensorboard**:
 ```
 conda activate drought
 cd /path_to/experiments/drought/drought-lstm/drought_lstm/
@@ -93,14 +93,15 @@ Each combination will have its own results saved to `experiments`. A comparison 
 
 To test a model you have trained. 
 
-1. You might have different testing tracks/datasets. You can add their names as well as context and target lengths in `task.__init__.py`
-2. Then we just do:
+1. You might have different testing tracks/datasets. You can add their names as well as context and target lengths in `task.__init__.py`. The code expects your data to be stored in `test/track_name`.
+2. Also add the track info in the `DroughtDataModule` in `earthnet_models_pytorch/setting/drought_data.py`
+3. Then we just do:
 ```
 python scripts/test.py --setting configs/drought/drought_lstm/base.yaml --checkpoint experiments/drought/drought-lstm/drought_lstm/full_train/checkpoints/last.ckpt --track track_name --pred_dir 'path_to_store_predictions’
 ```
 where `pred_dir` will be created if it doesn't exist yet.
 
-To view results/testing progress:
+**To view results/testing progress with tensorboard**:
 ```
 conda activate drought
 cd /path_to/experiments/drought/drought-lstm/drought_lstm/

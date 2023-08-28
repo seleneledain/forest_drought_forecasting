@@ -100,7 +100,8 @@ class DroughtDataset(Dataset):
 class DroughtDataModule(pl.LightningDataModule):
 
     __TRACKS__ = {
-        "iid": ("test/iid/","iid_test")
+        "iid": ("test/iid/","iid_test"),
+        "ood": ("test/ood/","ood_test")
     }
 
     def __init__(self, hparams: argparse.Namespace):
@@ -148,7 +149,7 @@ class DroughtDataModule(pl.LightningDataModule):
                 self.data_train, self.data_val = random_split(data_corpus, [train_size, val_size])
 
         if stage == 'test' or stage is None:
-            self.data_test = DroughtDataset(self.base_dir/self.__TRACKS__[self.hparams.test_track][0])
+            self.data_test = DroughtDataset(f'{self.base_dir}/{self.__TRACKS__[self.hparams.test_track][0]}')
             
     def train_dataloader(self) -> DataLoader:
         return DataLoader(self.data_train, batch_size=self.hparams.train_batch_size, num_workers = self.hparams.num_workers,pin_memory=True,drop_last=True)

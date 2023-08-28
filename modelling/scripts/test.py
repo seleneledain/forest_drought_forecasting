@@ -63,8 +63,8 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('--setting', type = str, metavar='path/to/setting.yaml', help='yaml with all settings')
     parser.add_argument('--checkpoint', type = str, metavar='path/to/checkpoint', help='checkpoint file')
-    parser.add_argument('--track', type = str, metavar='iid|ood|ex|sea', help='which track to test: either iid, ood, ex or sea')
-    parser.add_argument('--pred_dir', type = str, default = None, metavar = '/workspace/data/UC1/L2_minicubes/prediction/en22/', help = 'Path where to save predictions')
+    parser.add_argument('--track', type = str, help='which track to test: either iid or ood')
+    parser.add_argument('--pred_dir', type = str, default = None, metavar = '/data/scratch/selene/test/preds_iid', help = 'Path where to save predictions')
     args = parser.parse_args()
 
     import os
