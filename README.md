@@ -1,6 +1,11 @@
 # Forest drought forecasting: a spatially distributed approach using LSTMs
 Forecasting of forest drought impacts in Switzerland from satellite imagery, weather reanalysis and remote sensing data. Pixel-wise forecasts with feature engineering to provide model explainability.
 
+<p align="center">
+<img src="images/workflow.jpg", width="500">
+</p>
+<p align="center"><em>Proposed workflow to collect data, process it and use it for drought impact forecasting.</em></p>
+
 ## Repository structure
 
 ```.
@@ -138,7 +143,7 @@ The image below shows the center coordinates for the cubes that were downloaded 
 <p align="center">
 <img src="images/created_cubes.png" alt="Generated minicubes" width="700">
 </p>
-<p align="center"><em>Caption: Sampled cube coordinates, generating 180GB and 27GB of negative and drought samples respectively.</em></p>
+<p align="center"><em>Sampled cube coordinates, generating 180GB and 27GB of negative and drought samples respectively.</em></p>
 
 **How to split data into train and test**
 
