@@ -1,8 +1,8 @@
 name: drought
 channels:
+  - anaconda
   - pytorch
   - nvidia
-  - anaconda
   - conda-forge
   - defaults
 dependencies:
@@ -22,9 +22,9 @@ dependencies:
   - brotlipy=0.7.0=py311h5eee18b_1002
   - bzip2=1.0.8=h7b6447c_0
   - c-ares=1.19.0=h5eee18b_0
-  - ca-certificates=2023.01.10=h06a4308_0
+  - ca-certificates=2023.7.22=hbcca054_0
   - cachetools=5.3.1=pyhd8ed1ab_0
-  - certifi=2020.6.20=pyhd3eb1b0_3
+  - certifi=2023.7.22=pyhd8ed1ab_0
   - cffi=1.15.1=py311h5eee18b_3
   - charset-normalizer=2.0.4=pyhd3eb1b0_0
   - click=8.1.7=unix_pyh707e725_0
@@ -42,6 +42,7 @@ dependencies:
   - expat=2.2.10=h9c3ff4c_0
   - ffmpeg=4.3=hf484d3e_0
   - filelock=3.9.0=py311h06a4308_0
+  - fire=0.5.0=pyhd8ed1ab_0
   - fontconfig=2.14.1=hef1e5e3_0
   - fonttools=4.25.0=pyhd3eb1b0_0
   - freetype=2.12.1=h4a9f257_0
@@ -177,6 +178,7 @@ dependencies:
   - tbb=2021.8.0=hdb19cb5_0
   - tensorboard=2.14.0=pyhd8ed1ab_0
   - tensorboard-data-server=0.7.0=py311h52d8a92_0
+  - termcolor=2.3.0=pyhd8ed1ab_0
   - threadpoolctl=2.2.0=pyh0d69192_0
   - tk=8.6.12=h1ccaba5_0
   - toml=0.10.2=pyhd8ed1ab_0
@@ -200,3 +202,4 @@ dependencies:
   - zstd=1.5.5=hc292b87_0
   - pip:
     - pyyaml==6.0.1
+prefix: /home/sledain/anaconda3/envs/drought
