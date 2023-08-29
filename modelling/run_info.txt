@@ -1,0 +1,25 @@
+---------
+Aug 29th 2023
+
+Input 9 months, output 3 months.
+The predicted timesries start between June and Sep., as we are only interested in observing summer/fall months.
+
+Train region: [5.9, 45.8, 8.5, 47.64]. ~923K train + val samples 
+Test region is a portion of the east of Switzerland, therefore an out of domain region. ~80K samples
+
+Hyperparameter grid for LSTM:
+- hidden_dim: [32, 64, 128]
+- num_layers: [2, 4, 8, 10]
+
+Baseline metrics on the test set:
+- MSE with mean prediction (mean baseline metric): 0.037419183862327045
+- RMSE with mean prediction (mean baseline metric): 0.19344038839478958
+- MSE with persistence prediction (persistence baseline metric): 0.006290380960401597
+- RMSE with persistence prediction (persistence baseline metric): 0.07931192193107917
+
+Best model results:
+
+
+Plots are in the image folder
+
+
