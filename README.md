@@ -124,6 +124,13 @@ The format of the data that will be downloaded and the samples that will be crea
 - `gen_samples`: if True, will generate samples even if cube exists already (could overwrite existing samples).
 
 
+<p align="center">
+<img src="images/ndvi_cleaning.png", width="800">
+</p>
+<p align="center"><em>Example of cloud cleaning performed for NDVI timeseries</em></p>
+
+
+
 **How to create dataset**
 
 Downloaded cubes will be saved in `config.root_dir/config.split/cubes/` as `startyear_startmonth_startday_endyear_endmonth_endday_lon_lat_width_height.nc`
