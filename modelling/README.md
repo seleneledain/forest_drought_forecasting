@@ -112,8 +112,16 @@ tensorboard --logdir your_exp
 Predictions on the test set are saved. You can plot them using the following script which will create plots of the predicted NDVI timeseries, the ground truth and the mean NDVI of the input/context tensor.\
 You can also plot only preidctions in a specific bounding box and/or time range (the time range to provide shouldbe that of the context data which is used to name the files.)
 ```
-python plot_ndvi_preds.py --truth_path /path/to/test/set --pred_path /path/to/test/predictions --coord_range minX minY maxX maxY --time_range yyyy-mm-dd yyyy-mm-dd --ndvi_idx 5
+python plot_ndvi_preds.py --truth_path /path/to/test/set --pred_path /path/to/test/predictions --coord_range minX minY maxX maxY --time_range yyyy-mm-dd yyyy-mm-dd --ndvi_idx 5 --limit_plots 3
 ```
+For example, such plots will be generated:
+
+<p align="center">
+<img src="analysis/pred_plot_example.png", width="500">
+</p>
+
+
+
 
 **Computing baseline scores**
 You can compute the MSE and RMSE on the test set considering some baseline scenarios:

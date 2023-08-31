@@ -14,21 +14,32 @@ import random
 
 
 def plot_ndvi_preds(truth_path, pred_path, coord_range, time_range, ndvi_idx, limit_plots):
-    
-    # Loop through prediction files. Format '{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}_{shift}.npz'
-    # For each file, find the corresponding ground truth data. Has the same name in truth_path
-    
+    """
+    Args:
+        truth_path (str): path to ground truth data
+        pred_path (str): path to corresponding predictions
+        coord_range (str): filter plots by coordinates minX minY maxX maxY
+        time_range (str): filter plots by time range yyyy-mm-dd yyyy-mm-dd
+        ndvi_idx (int): index of NDVI in the tensors
+        limit_plots (int): limit the number of generated plots. This is recommended if you have many samples, as the code will fail to generate an image with many plots
+    """
+
     # Get a list of all prediction files in the pred_path directory
     pred_files = [f for f in os.listdir(pred_path) if f.endswith('.npz')]
     # Shuffle the list of prediction files
     random.shuffle(pred_files)
 
     num_subplots = len(pred_files)
-    fig, axs = plt.subplots(num_subplots, 1, figsize=(10, 4 * num_subplots))
+    fig, axs = plt.subplots(limit_plots if limit_plots is not None else num_subplots, 1, figsize=(10, 10)) # figsize is for q single subplot
+    
+    if limit_plots is None:
+        limit_plots = num_subplots
+        
+    created_plots = 0
 
     for idx, pred_file in enumerate(pred_files):
+
         # Extract information from the prediction file
-       
         start_yr, start_month, start_day, end_yr, end_month, end_day, lon, lat, width, height, shift = pred_file.split('_')
         # These correspond to the context dates
         start_file_date = datetime(int(start_yr), int(start_month), int(start_day))
@@ -41,7 +52,9 @@ def plot_ndvi_preds(truth_path, pred_path, coord_range, time_range, ndvi_idx, li
                         (start_file_date >= datetime.strptime(time_range[0], '%Y-%m-%d') and
                             end_file_date <= datetime.strptime(time_range[1], '%Y-%m-%d')))
 
-        if coord_criteria and time_criteria:
+        if coord_criteria and time_criteria and created_plots < limit_plots:
+            print('here', start_file_date, end_file_date)
+                       
             # Form the corresponding truth file name
             truth_file = f"{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}_{shift}" #shift already has the .npz string
             truth_file_path = os.path.join(truth_path, truth_file)
@@ -59,37 +72,42 @@ def plot_ndvi_preds(truth_path, pred_path, coord_range, time_range, ndvi_idx, li
             # Generate date range with 5-day timestep
             date_range = [target_start_file_date + timedelta(days=5 * i) for i in range(len(pred_data))]
             # Plot the two timeseries as lineplots of different colors
-            axs[idx].plot(date_range, pred_data, label='Prediction', color='blue')
-            axs[idx].plot(date_range, truth_data, label='Ground Truth', color='red')
+            axs[created_plots].plot(date_range, pred_data, label='Prediction', color='blue')
+            axs[created_plots].plot(date_range, truth_data, label='Ground Truth', color='red')
             # Formatting x ticks
-            axs[idx].set_xticks(date_range)  # Set the x ticks to match the date_range
-            axs[idx].xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y-%m-%d'))  # Format the tick labels
+            axs[created_plots].set_xticks(date_range)  # Set the x ticks to match the date_range
+            axs[created_plots].xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y-%m-%d'))  # Format the tick labels
             # Rotate the tick labels for better readability
-            axs[idx].tick_params(axis='x', rotation=45)
+            axs[created_plots].tick_params(axis='x', rotation=45)
 
             # Add mean as ticked line
-            axs[idx].plot(date_range, [mean_baseline]*len(truth_data), label='Context mean', color='green', linestyle='--')
-            axs[idx].set_title(f"Lon: {lon}, Lat: {lat}, Start: {target_start_file_date}, End: {target_end_file_date}") 
-            axs[idx].set_xlabel("Time")
-            axs[idx].set_ylabel("NDVI Value")
-            axs[idx].legend()
+            axs[created_plots].plot(date_range, [mean_baseline]*len(truth_data), label='Context mean', color='green', linestyle='--')
+            axs[created_plots].set_title(f"Lon: {lon}, Lat: {lat}") 
+            axs[created_plots].set_xlabel("Time")
+            axs[created_plots].set_ylabel("NDVI Value")
+            axs[created_plots].set_ylim(0,1)
+            axs[created_plots].legend()
 
+            created_plots += 1
+            
             # Continue with the next prediction file
             continue
-
-    plt.tight_layout()
-    # Save the figure to pred_path
-    png_path = f'preds_'
-    if coord_range is None:
-        png_path += 'allcoords_'
-    else:
-        png_path += f'{coord_range[0]}_{coord_range[1]}_{coord_range[2]}_{coord_range[3]}_'
-    if time_range is None:
-        png_path += 'alltime.png'
-    else:
-        png_path += f'{time_range[0]}_{time_range[1]}.png'
-    save_path = os.path.join(pred_path, png_path)
-    plt.savefig(save_path)
+        
+    
+    if created_plots > 0:
+        plt.tight_layout()
+        # Save the figure to pred_path
+        png_path = f'preds_'
+        if coord_range is None:
+            png_path += 'allcoords_'
+        else:
+            png_path += f'{coord_range[0]}_{coord_range[1]}_{coord_range[2]}_{coord_range[3]}_'
+        if time_range is None:
+            png_path += 'alltime.png'
+        else:
+            png_path += f'{time_range[0]}_{time_range[1]}.png'
+        save_path = os.path.join(pred_path, png_path)
+        plt.savefig(save_path)
 
 
 if __name__ == '__main__':
