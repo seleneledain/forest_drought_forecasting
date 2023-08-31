@@ -117,7 +117,7 @@ python plot_ndvi_preds.py --truth_path /path/to/test/set --pred_path /path/to/te
 For example, such plots will be generated:
 
 <p align="center">
-<img src="analysis/pred_plot_examples.png", width="500">
+<img src="analysis/preds_plot_examples.png", width="500">
 </p>
 
 
