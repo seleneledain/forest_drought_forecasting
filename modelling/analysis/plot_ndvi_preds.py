@@ -53,7 +53,7 @@ def plot_ndvi_preds(truth_path, pred_path, coord_range, time_range, ndvi_idx, li
                             end_file_date <= datetime.strptime(time_range[1], '%Y-%m-%d')))
 
         if coord_criteria and time_criteria and created_plots < limit_plots:
-            print('here', start_file_date, end_file_date)
+            #print('here', start_file_date, end_file_date)
                        
             # Form the corresponding truth file name
             truth_file = f"{start_yr}_{start_month}_{start_day}_{end_yr}_{end_month}_{end_day}_{lon}_{lat}_{width}_{height}_{shift}" #shift already has the .npz string
@@ -108,6 +108,8 @@ def plot_ndvi_preds(truth_path, pred_path, coord_range, time_range, ndvi_idx, li
             png_path += f'{time_range[0]}_{time_range[1]}.png'
         save_path = os.path.join(pred_path, png_path)
         plt.savefig(save_path)
+    else:
+        print('No predictions found')
 
 
 if __name__ == '__main__':
