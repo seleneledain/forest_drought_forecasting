@@ -68,6 +68,6 @@ Task:
 
 Model:
     input_dim: 74 #number of input features
-    hidden_dim: 32 #number of nodes in hidden layers
-    num_layers: 2 #number of hidden layers
+    hidden_dim: 64 #number of nodes in hidden layers
+    num_layers: 10 #number of hidden layers
     target_length: 18

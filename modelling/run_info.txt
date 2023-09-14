@@ -18,8 +18,11 @@ Baseline metrics on the test set:
 - RMSE with persistence prediction (persistence baseline metric): 0.07931192193107917
 
 Best model results:
+--Setup--
+- hidden_dim: 64
+- num_layers: 10
+--Metrics--
+- Train RMSE 0.07314914464950562.
 
-
-Plots are in the image folder
 
 
