@@ -1,0 +1,35 @@
+base_dir: /data/scratch/selene/
+compute_metric_on_test: true
+context_length: 54
+loss:
+  name: L2NDVILoss
+  ndvi_pred_idx: 0
+  ndvi_targ_idx: 5
+model_shedules: []
+n_log_batches: 2
+num_workers: 4
+optimization:
+  lr_shedule:
+  - args:
+      gamma: 0.1
+      milestones:
+      - 160
+      - 190
+    name: MultiStepLR
+  optimizer:
+  - args:
+      betas:
+      - 0.8
+      - 0.999
+      lr: 6.4e-05
+    lr_per_sample: 1.0e-06
+    name: Adam
+pred_dir: null
+setting: drought
+target_length: 18
+test_batch_size: 64
+test_track: ood
+train_batch_size: 64
+val_batch_size: 64
+val_pct: 0.1
+val_split_seed: 42.0

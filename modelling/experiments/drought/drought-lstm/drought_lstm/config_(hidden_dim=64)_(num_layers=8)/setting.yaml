@@ -1,0 +1,68 @@
+Architecture: drought-lstm
+Checkpointer:
+  every_n_epochs: 1
+  filename: Epoch-{epoch:02d}-RMSE-{RMSE:.4f}
+  mode: min
+  monitor: RMSE_drought
+  save_last: true
+  save_top_k: 1
+Data:
+  base_dir: /data/scratch/selene/
+  num_workers: 4
+  test_batch_size: 64
+  test_track: ood
+  train_batch_size: 64
+  val_batch_size: 64
+  val_pct: 0.1
+  val_split_seed: 42
+Logger:
+  name: drought_lstm
+  save_dir: experiments/drought/drought-lstm
+  version: config_(hidden_dim=64)_(num_layers=8)
+Model:
+  hidden_dim: 64
+  input_dim: 74
+  num_layers: 8
+  setting: drought
+  target_length: 18
+Seed: 42
+Setting: drought
+Task:
+  compute_metric_on_test: true
+  context_length: 54
+  loss:
+    name: L2NDVILoss
+    ndvi_pred_idx: 0
+    ndvi_targ_idx: 5
+  n_log_batches: 2
+  optimization:
+    lr_shedule:
+    - args:
+        gamma: 0.1
+        milestones:
+        - 160
+        - 190
+      name: MultiStepLR
+    optimizer:
+    - args:
+        betas:
+        - 0.8
+        - 0.999
+        lr: 6.4e-05
+      lr_per_sample: 1.0e-06
+      name: Adam
+  setting: drought
+  target_length: 18
+  test_batch_size: 64
+  train_batch_size: 64
+  val_batch_size: 64
+Trainer:
+  check_val_every_n_epoch: 1
+  devices: 1
+  fast_dev_run: false
+  gradient_clip_val: 1
+  log_every_n_steps: 32
+  max_epochs: 100
+  num_sanity_val_steps: 0
+  precision: 32
+  strategy: ddp
